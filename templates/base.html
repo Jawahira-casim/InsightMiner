@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>InsightMiner | IFPS Institute</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            background: #f4f7fb;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Top navigation bar */
+
+        .topbar {
+            height: 60px;
+            background: #0b1f3a;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        .logo-img {
+            width: 42px;
+            background: white;
+            border-radius: 8px;
+            padding: 3px;
+        }
+
+        /* Sidebar */
+
+        .sidebar {
+            width: 255px;
+            background: linear-gradient(180deg, #071a33, #102542);
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+            padding: 18px 12px;
+            box-shadow: 4px 0 18px rgba(0, 0, 0, 0.15);
+            z-index: 900;
+        }
+
+        .sidebar-title {
+            color: #93c5fd;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin: 18px 12px 8px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .sidebar a {
+            color: #dbeafe;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 0.25s;
+        }
+
+        .sidebar a:hover {
+            background: rgba(37, 99, 235, 0.95);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .sidebar a.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.35);
+        }
+
+        .sidebar .logout-link {
+            color: #fecaca;
+            margin-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding-top: 14px;
+        }
+
+        .sidebar .logout-link:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        /* Content when user is logged in */
+
+        .page-content.with-sidebar {
+            margin-left: 255px;
+            padding: 90px 30px 30px;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Content for login, register and public pages */
+
+        .page-content.without-sidebar {
+            margin-left: 0;
+            padding: 60px 0 0;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Footer */
+
+        .main-footer {
+            width: auto;
+            background: #0b1f3a;
+            color: white;
+            padding: 22px 20px;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Footer when sidebar is visible */
+
+        .main-footer.with-sidebar {
+            margin-left: 255px;
+        }
+
+        /* Footer on login/register/public pages */
+
+        .main-footer.without-sidebar {
+            margin-left: 0;
+            width: 100%;
+        }
+
+        .main-footer strong {
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .main-footer small {
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        /* Mobile layout */
+
+        @media (max-width: 768px) {
+
+            .topbar {
+                position: fixed;
+            }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                top: 60px;
+                bottom: auto;
+            }
+
+            .page-content.with-sidebar,
+            .page-content.without-sidebar {
+                margin-left: 0;
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            .main-footer.with-sidebar,
+            .main-footer.without-sidebar {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body id="mainBody">
+
+<!-- Top bar -->
+
+<div class="topbar d-flex align-items-center justify-content-between px-3">
+
+    <a
+        href="{% if session.get('logged_in') %}/dashboard{% else %}/{% endif %}"
+        class="text-white text-decoration-none d-flex align-items-center">
+
+        <img
+            src="{{ url_for('static', filename='logo.png') }}"
+            class="logo-img me-2"
+            alt="IFPS Logo">
+
+        <div>
+
+            <strong>InsightMiner</strong>
+
+            <br>
+
+            <small class="text-light">
+                Educational Data Mining System
+            </small>
+
+        </div>
+
+    </a>
+
+    {% if session.get('logged_in') %}
+
+    <div class="d-flex align-items-center">
+
+        <!-- Notifications -->
+
+        <a
+            href="/notifications"
+            class="text-white text-decoration-none position-relative me-4">
+
+            <i class="bi bi-bell-fill fs-4"></i>
+
+            {% if unread_notifications|default(0) > 0 %}
+
+            <span
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+
+                {{ unread_notifications }}
+
+            </span>
+
+            {% endif %}
+
+        </a>
+
+        <!-- Dark mode -->
+
+        <a
+            href="#"
+            onclick="toggleDarkMode(); return false;"
+            class="text-white text-decoration-none me-4"
+            title="Toggle dark mode">
+
+            <i class="bi bi-moon-stars-fill fs-4"></i>
+
+        </a>
+
+        <!-- User dropdown -->
+
+        <div class="dropdown">
+
+            <a
+                class="text-white dropdown-toggle text-decoration-none"
+                href="#"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+
+                <i class="bi bi-person-circle me-1"></i>
+
+                {{ session.get('username') }}
+
+            </a>
+
+            <ul class="dropdown-menu dropdown-menu-end">
+
+                <li>
+
+                    <a class="dropdown-item" href="/profile">
+
+                        <i class="bi bi-person me-2"></i>
+                        My Profile
+
+                    </a>
+
+                </li>
+
+                <li>
+
+                    <a class="dropdown-item" href="/change_password">
+
+                        <i class="bi bi-key me-2"></i>
+                        Change Password
+
+                    </a>
+
+                </li>
+
+                <li>
+
+                    <a class="dropdown-item" href="/activity">
+
+                        <i class="bi bi-clock-history me-2"></i>
+                        Activity Log
+
+                    </a>
+
+                </li>
+
+                <li>
+
+                    <a class="dropdown-item" href="/settings">
+
+                        <i class="bi bi-gear me-2"></i>
+                        Settings
+
+                    </a>
+
+                </li>
+
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+
+                <li>
+
+                    <a
+                        class="dropdown-item text-danger"
+                        href="{{ url_for('auth.logout') }}">
+
+                        <i class="bi bi-box-arrow-right me-2"></i>
+                        Logout
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<!-- Sidebar -->
+
+{% if session.get('logged_in') %}
+
+<div class="sidebar">
+
+    <div class="sidebar-title">
+        Main
+    </div>
+
+    <a href="/dashboard">
+        <i class="bi bi-house-door"></i>
+        Dashboard
+    </a>
+
+    <div class="sidebar-title">
+        Dataset Management
+    </div>
+
+    <a href="/upload">
+        <i class="bi bi-cloud-arrow-up"></i>
+        Upload Dataset
+    </a>
+
+    <a href="/import_dataset">
+        <i class="bi bi-download"></i>
+        Import Dataset
+    </a>
+
+    <a href="/dataset_history">
+        <i class="bi bi-folder2-open"></i>
+        Dataset History
+    </a>
+
+    <a href="/dataset_comparison">
+        <i class="bi bi-columns-gap"></i>
+        Dataset Compare
+    </a>
+
+    <a href="/clean_data">
+        <i class="bi bi-eraser"></i>
+        Clean Dataset
+    </a>
+
+    <div class="sidebar-title">
+        Analytics
+    </div>
+
+    <a href="/charts">
+        <i class="bi bi-bar-chart-line"></i>
+        Charts
+    </a>
+
+    <a href="/insights">
+        <i class="bi bi-robot"></i>
+        AI Insights
+    </a>
+
+    <a href="/prediction">
+        <i class="bi bi-graph-up-arrow"></i>
+        Prediction
+    </a>
+
+    <div class="sidebar-title">
+        Reports
+    </div>
+
+    <a href="/download_pdf">
+        <i class="bi bi-file-earmark-pdf"></i>
+        PDF Report
+    </a>
+
+    <a href="/download_report">
+        <i class="bi bi-file-earmark-excel"></i>
+        Excel Report
+    </a>
+
+    <div class="sidebar-title">
+        System
+    </div>
+
+    <a href="/activity">
+        <i class="bi bi-clock-history"></i>
+        Activity Log
+    </a>
+
+    <a href="/users">
+        <i class="bi bi-people"></i>
+        User Management
+    </a>
+
+    <a href="/backup">
+        <i class="bi bi-database-check"></i>
+        Backup
+    </a>
+
+    <a href="/settings">
+        <i class="bi bi-gear"></i>
+        Settings
+    </a>
+
+    <a href="/about">
+        <i class="bi bi-info-circle"></i>
+        About
+    </a>
+
+    <a href="/help">
+        <i class="bi bi-question-circle"></i>
+        Help
+    </a>
+
+    <a
+        class="logout-link"
+        href="{{ url_for('auth.logout') }}">
+
+        <i class="bi bi-box-arrow-right"></i>
+        Logout
+
+    </a>
+
+</div>
+
+{% endif %}
+
+<!-- Main page content -->
+
+<div class="page-content
+    {% if session.get('logged_in') %}
+        with-sidebar
+    {% else %}
+        without-sidebar
+    {% endif %}">
+
+    {% block content %}
+    {% endblock %}
+
+</div>
+
+<!-- Footer -->
+
+<footer class="main-footer
+    {% if session.get('logged_in') %}
+        with-sidebar
+    {% else %}
+        without-sidebar
+    {% endif %}">
+
+    <strong>
+        Imamath Foundation Professional Studies (IFPS) Institute
+    </strong>
+
+    <br>
+
+    InsightMiner – Empowering Smarter Decisions Through Data Intelligence
+
+    <br>
+
+    <small>
+        © 2026 IFPS Institute. All Rights Reserved.
+    </small>
+
+</footer>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<script>
+
+    function toggleDarkMode() {
+
+        document.body.classList.toggle("dark-mode");
+
+        if (document.body.classList.contains("dark-mode")) {
+
+            localStorage.setItem("theme", "dark");
+
+        } else {
+
+            localStorage.setItem("theme", "light");
+
+        }
+
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        if (localStorage.getItem("theme") === "dark") {
+
+            document.body.classList.add("dark-mode");
+
+        }
+
+    });
+
+</script>
+
+</body>
+
+</html>

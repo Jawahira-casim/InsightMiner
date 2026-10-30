@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">📜 Activity Log</h3>
+            <span class="badge bg-light text-dark">{{ logs|length }} Records</span>
+        </div>
+
+        <div class="card-body">
+
+            <form method="GET" class="row g-3 mb-4">
+
+                <div class="col-md-5">
+                    <input type="text"
+                           name="search"
+                           value="{{ search }}"
+                           class="form-control"
+                           placeholder="Search by username or activity">
+                </div>
+
+                <div class="col-md-4">
+                    <input type="date"
+                           name="date"
+                           value="{{ date }}"
+                           class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <button class="btn btn-primary w-100">Search / Filter</button>
+                </div>
+
+            </form>
+
+            <a href="/activity" class="btn btn-secondary mb-3">Clear Filters</a>
+            <a href="/activity_excel?search={{ search }}&date={{ date }}" class="btn btn-success mb-3">
+    📊 Export Excel
+</a>
+
+<a href="/activity_pdf?search={{ search }}&date={{ date }}" class="btn btn-danger mb-3">
+    📄 Export PDF
+</a>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Username</th>
+                            <th>Activity</th>
+                            <th>Date & Time</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.username }}</td>
+                            <td>{{ log.activity }}</td>
+                            <td>{{ log.activity_time }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">
+                                No activity records found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

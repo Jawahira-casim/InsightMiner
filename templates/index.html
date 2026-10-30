@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>InsightMiner | IFPS Institute</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <style>
+
+        :root {
+            --primary-dark: #071a33;
+            --primary: #0d47a1;
+            --secondary: #2563eb;
+            --light-bg: #f4f7fc;
+            --text-dark: #172033;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--light-bg);
+            color: var(--text-dark);
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        /* Navigation bar */
+
+        .main-navbar {
+            background: rgba(7, 26, 51, 0.96);
+            backdrop-filter: blur(10px);
+            padding: 12px 0;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .navbar-brand img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            margin-right: 10px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        /* Hero section */
+
+        .hero {
+            min-height: 92vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            background:
+                radial-gradient(
+                    circle at top right,
+                    rgba(96, 165, 250, 0.35),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    135deg,
+                    #06162c 0%,
+                    #0d47a1 55%,
+                    #2563eb 100%
+                );
+        }
+
+        .hero::before,
+        .hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .hero::before {
+            width: 380px;
+            height: 380px;
+            top: -150px;
+            right: -100px;
+        }
+
+        .hero::after {
+            width: 280px;
+            height: 280px;
+            bottom: -120px;
+            left: -80px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-logo {
+            width: 190px;
+            max-width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 12px;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+        }
+
+        .hero-title {
+            font-size: clamp(2.8rem, 6vw, 5rem);
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-top: 24px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.45rem;
+            font-weight: 500;
+            margin-top: 14px;
+        }
+
+        .hero-description {
+            max-width: 720px;
+            margin: 18px auto 0;
+            font-size: 1.08rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.86);
+        }
+
+        .hero-buttons {
+            margin-top: 32px;
+        }
+
+        .hero-buttons .btn {
+            min-width: 155px;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 6px;
+        }
+
+        .btn-login {
+            background: white;
+            color: #0d47a1;
+            border: 2px solid white;
+        }
+
+        .btn-login:hover {
+            background: #eef4ff;
+            color: #073b87;
+            border-color: #eef4ff;
+        }
+
+        .btn-register {
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-register:hover {
+            background: white;
+            color: #0d47a1;
+        }
+
+        /* Sections */
+
+        .section {
+            padding: 90px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 750;
+            margin-bottom: 14px;
+        }
+
+        .section-description {
+            max-width: 720px;
+            margin: 0 auto 48px;
+            text-align: center;
+            color: #667085;
+            line-height: 1.7;
+        }
+
+        /* Feature cards */
+
+        .feature-card {
+            height: 100%;
+            border: none;
+            border-radius: 20px;
+            padding: 30px;
+            background: white;
+            box-shadow: 0 10px 28px rgba(30, 64, 175, 0.09);
+            transition: transform 0.3s ease,
+                        box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 38px rgba(30, 64, 175, 0.16);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #0d47a1;
+            background: #eaf2ff;
+        }
+
+        .feature-card h4 {
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .feature-card p {
+            color: #667085;
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+
+        /* Workflow */
+
+        .workflow-section {
+            background: white;
+        }
+
+        .workflow-container {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .workflow-item {
+            flex: 1;
+            min-width: 170px;
+            max-width: 210px;
+            text-align: center;
+            border-radius: 18px;
+            padding: 26px 18px;
+            background: #f7f9fd;
+            border: 1px solid #e4eaf4;
+            position: relative;
+        }
+
+        .workflow-number {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d47a1, #2563eb);
+            color: white;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .workflow-item i {
+            display: block;
+            font-size: 2rem;
+            color: #0d47a1;
+            margin-bottom: 12px;
+        }
+
+        .workflow-item h5 {
+            font-weight: 700;
+        }
+
+        .workflow-item p {
+            color: #667085;
+            font-size: 0.92rem;
+            margin-bottom: 0;
+        }
+
+        /* Technology badges */
+
+        .technology-section {
+            background:
+                linear-gradient(
+                    135deg,
+                    #071a33,
+                    #0d47a1
+                );
+            color: white;
+        }
+
+        .technology-section .section-description {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .technology-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            margin: 7px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.11);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            font-weight: 600;
+        }
+
+        /* Call-to-action */
+
+        .cta-card {
+            border-radius: 24px;
+            padding: 55px 30px;
+            text-align: center;
+            color: white;
+            background:
+                linear-gradient(
+                    135deg,
+                    #0d47a1,
+                    #2563eb
+                );
+            box-shadow: 0 20px 45px rgba(13, 71, 161, 0.24);
+        }
+
+        .cta-card h2 {
+            font-weight: 750;
+        }
+
+        .cta-card p {
+            max-width: 700px;
+            margin: 18px auto 26px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Footer */
+
+        footer {
+            background: #061426;
+            color: rgba(255, 255, 255, 0.78);
+            padding: 42px 0 22px;
+        }
+
+        .footer-logo {
+            width: 75px;
+            background: white;
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .footer-title {
+            color: white;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+
+        .footer-divider {
+            border-color: rgba(255, 255, 255, 0.12);
+            margin: 28px 0 18px;
+        }
+
+        @media (max-width: 768px) {
+
+            .hero {
+                min-height: auto;
+                padding: 110px 15px 75px;
+            }
+
+            .hero-logo {
+                width: 145px;
+            }
+
+            .hero-title {
+                letter-spacing: -1px;
+            }
+
+            .hero-subtitle {
+                font-size: 1.15rem;
+            }
+
+            .section {
+                padding: 65px 0;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .workflow-item {
+                max-width: none;
+                width: 100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- Navigation -->
+
+<nav class="navbar navbar-expand-lg navbar-dark main-navbar sticky-top">
+
+    <div class="container">
+
+        <a class="navbar-brand d-flex align-items-center"
+           href="#home">
+
+            <img src="{{ url_for('static', filename='logo.png') }}"
+                 alt="IFPS Logo">
+
+            InsightMiner
+
+        </a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavigation">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <div class="collapse navbar-collapse"
+             id="mainNavigation">
+
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="#features">
+                        Features
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="#workflow">
+                        Workflow
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link"
+                       href="#technology">
+                        Technologies
+                    </a>
+
+                </li>
+
+                <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+
+                    <a class="btn btn-outline-light rounded-pill px-4"
+                       href="{{ url_for('auth.login') }}">
+
+                        <i class="bi bi-box-arrow-in-right me-1"></i>
+                        Login
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<!-- Hero Section -->
+
+<section class="hero"
+         id="home">
+
+    <div class="container hero-content text-center">
+
+        <img class="hero-logo"
+             src="{{ url_for('static', filename='logo.png') }}"
+             alt="IF Professional Studies Logo">
+
+        <h1 class="hero-title">
+            InsightMiner
+        </h1>
+
+        <div class="hero-subtitle">
+            Intelligent Data Mining and Analytics System
+        </div>
+
+        <p class="hero-description">
+
+            Transform educational data into meaningful insights through
+            data cleaning, advanced analysis, interactive visualization,
+            machine learning prediction and professional reporting.
+
+        </p>
+
+        <p class="fw-semibold mt-3">
+            Developed for IF Professional Studies Institute
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="{{ url_for('auth.login') }}"
+               class="btn btn-login btn-lg">
+
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Login
+
+            </a>
+
+            <a href="{{ url_for('auth.register') }}"
+               class="btn btn-register btn-lg">
+
+                <i class="bi bi-person-plus me-2"></i>
+                Create Account
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Features -->
+
+<section class="section"
+         id="features">
+
+    <div class="container">
+
+        <h2 class="section-title">
+            Powerful System Features
+        </h2>
+
+        <p class="section-description">
+
+            InsightMiner combines data management, analysis,
+            machine learning and reporting tools in one secure
+            and easy-to-use platform.
+
+        </p>
+
+        <div class="row g-4">
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+
+                    <h4>Dataset Management</h4>
+
+                    <p>
+
+                        Upload CSV and Excel files, manage dataset history,
+                        compare datasets and import structured information
+                        securely.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="bi bi-brush"></i>
+                    </div>
+
+                    <h4>Data Cleaning</h4>
+
+                    <p>
+
+                        Identify missing values, remove duplicate records
+                        and prepare raw datasets for reliable analysis.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="bi bi-bar-chart-line"></i>
+                    </div>
+
+                    <h4>Advanced Analytics</h4>
+
+                    <p>
+
+                        Generate statistical summaries, correlation analysis,
+                        descriptive results and interactive visualizations.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+
+                    <h4>Machine Learning</h4>
+
+                    <p>
+
+                        Build prediction models using Linear Regression,
+                        Naïve Bayes and K-Nearest Neighbors with
+                        evaluation metrics.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                    </div>
+
+                    <h4>Professional Reports</h4>
+
+                    <p>
+
+                        Generate and download detailed PDF and Excel reports
+                        containing summaries, statistics and visual results.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card">
+
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+
+                    <h4>Secure Access</h4>
+
+                    <p>
+
+                        Protect system resources through authentication,
+                        role-based access, activity logs, notifications
+                        and backup management.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Workflow -->
+
+<section class="section workflow-section"
+         id="workflow">
+
+    <div class="container">
+
+        <h2 class="section-title">
+            InsightMiner Workflow
+        </h2>
+
+        <p class="section-description">
+
+            The system guides users through a clear data mining process
+            from uploading raw data to producing meaningful reports.
+
+        </p>
+
+        <div class="workflow-container">
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">1</div>
+
+                <i class="bi bi-cloud-upload"></i>
+
+                <h5>Upload</h5>
+
+                <p>
+                    Import CSV or Excel datasets.
+                </p>
+
+            </div>
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">2</div>
+
+                <i class="bi bi-eraser"></i>
+
+                <h5>Clean</h5>
+
+                <p>
+                    Handle missing and duplicate values.
+                </p>
+
+            </div>
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">3</div>
+
+                <i class="bi bi-graph-up"></i>
+
+                <h5>Analyze</h5>
+
+                <p>
+                    Examine statistics and relationships.
+                </p>
+
+            </div>
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">4</div>
+
+                <i class="bi bi-robot"></i>
+
+                <h5>Predict</h5>
+
+                <p>
+                    Apply machine learning algorithms.
+                </p>
+
+            </div>
+
+            <div class="workflow-item">
+
+                <div class="workflow-number">5</div>
+
+                <i class="bi bi-file-earmark-pdf"></i>
+
+                <h5>Report</h5>
+
+                <p>
+                    Export insights as PDF or Excel.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Technology Stack -->
+
+<section class="section technology-section"
+         id="technology">
+
+    <div class="container text-center">
+
+        <h2 class="section-title">
+            Technology Stack
+        </h2>
+
+        <p class="section-description">
+
+            InsightMiner is developed using reliable modern technologies
+            for data processing, machine learning and web application
+            development.
+
+        </p>
+
+        <div>
+
+            <span class="technology-badge">
+                <i class="bi bi-filetype-py"></i>
+                Python
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-globe"></i>
+                Flask
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-database"></i>
+                MySQL
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-table"></i>
+                Pandas
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-cpu-fill"></i>
+                Scikit-learn
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-bar-chart"></i>
+                Matplotlib
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-bootstrap"></i>
+                Bootstrap 5
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-filetype-html"></i>
+                HTML5
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-filetype-css"></i>
+                CSS3
+            </span>
+
+            <span class="technology-badge">
+                <i class="bi bi-filetype-js"></i>
+                JavaScript
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Call to action -->
+
+<section class="section">
+
+    <div class="container">
+
+        <div class="cta-card">
+
+            <h2>
+                Start Discovering Meaningful Insights
+            </h2>
+
+            <p>
+
+                Sign in to upload datasets, clean information,
+                create visualizations, perform machine learning
+                predictions and generate professional reports.
+
+            </p>
+
+            <a href="{{ url_for('auth.login') }}"
+               class="btn btn-light btn-lg rounded-pill px-5">
+
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Access InsightMiner
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- Footer -->
+
+<footer>
+
+    <div class="container text-center">
+
+        <img class="footer-logo"
+             src="{{ url_for('static', filename='logo.png') }}"
+             alt="IFPS Logo">
+
+        <h5 class="footer-title">
+            IF Professional Studies Institute
+        </h5>
+
+        <p class="mb-1">
+            InsightMiner – Intelligent Data Mining and Analytics System
+        </p>
+
+        <p class="small">
+            Version 1.0
+        </p>
+
+        <hr class="footer-divider">
+
+        <small>
+            © 2026 IF Professional Studies Institute.
+            All Rights Reserved.
+        </small>
+
+    </div>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+
+</html>

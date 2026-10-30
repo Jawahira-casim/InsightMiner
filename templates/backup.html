@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-primary text-white">
+            <h3>💾 Backup Center</h3>
+        </div>
+
+        <div class="card-body">
+
+            <a href="/create_backup" class="btn btn-success mb-4">
+                💾 Create Backup
+            </a>
+
+            <h4>Backup History</h4>
+
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Backup File</th>
+<th>Size (KB)</th>
+<th>Created Date</th>
+<th width="220">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for file in files %}
+                    <tr>
+                        <td>{{ file.name }}</td>
+
+<td>{{ file.size }}</td>
+
+<td>{{ file.date.strftime('%d-%m-%Y %I:%M %p') }}</td>
+
+<td>
+
+    <a href="/download_backup/{{ file.name }}"
+       class="btn btn-sm btn-primary">
+        <i class="bi bi-download"></i> Download
+    </a>
+
+    <a href="/delete_backup/{{ file.name }}"
+       class="btn btn-sm btn-danger"
+       onclick="return confirm('Delete this backup?');">
+        <i class="bi bi-trash"></i> Delete
+    </a>
+
+</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">
+                            No backups found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

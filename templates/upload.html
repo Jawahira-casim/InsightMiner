@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container d-flex justify-content-center mt-5">
+    <div class="upload-card col-md-6 text-center">
+        <h2 class="fw-bold mb-3">Upload Dataset</h2>
+        <p class="text-secondary mb-4">Select a CSV or Excel file to begin your analysis.</p>
+        
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-4">
+                <input type="file" name="file" class="form-control form-control-lg">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100">Process Dataset</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

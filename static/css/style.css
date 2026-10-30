@@ -1,0 +1,372 @@
+/* ===========================
+   InsightMiner Professional UI
+=========================== */
+
+body{
+    background:#f5f7fb;
+    font-family:Segoe UI,Arial,sans-serif;
+}
+
+/* ===========================
+   Navbar
+=========================== */
+
+.navbar{
+    box-shadow:0 2px 15px rgba(0,0,0,.15);
+}
+
+/* ===========================
+   Cards
+=========================== */
+
+.card{
+    border:none;
+    border-radius:18px;
+    overflow:hidden;
+}
+
+.card-header{
+    border-radius:18px 18px 0 0 !important;
+}
+
+.dashboard-card{
+
+    transition:.3s;
+
+}
+
+.dashboard-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 15px 30px rgba(0,0,0,.20);
+
+}
+
+/* ===========================
+   Dashboard Icons
+=========================== */
+
+.dashboard-card i{
+    font-size:42px;
+    margin-bottom:15px;
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.btn{
+
+    border-radius:10px;
+
+    transition:.3s;
+
+}
+
+.btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+/* ===========================
+   Quick Action Buttons
+=========================== */
+
+.quick-action{
+    width:170px;
+    height:70px;
+
+    display:flex;
+    flex-direction:row;
+
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+
+    border-radius:10px;
+
+    font-size:17px;
+    font-weight:600;
+
+    transition:.3s;
+}
+
+.quick-action i{
+    font-size:22px;
+    margin:0;
+}
+
+.quick-action:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(0,0,0,.15);
+}
+
+/* ===========================
+   Tables
+=========================== */
+
+.table{
+
+    vertical-align:middle;
+
+}
+
+.table thead{
+
+    background:#212529;
+
+    color:white;
+
+}
+
+/* ===========================
+   Forms
+=========================== */
+
+.form-control{
+
+    border-radius:10px;
+
+}
+
+.form-select{
+
+    border-radius:10px;
+
+}
+
+/* ===========================
+   Images
+=========================== */
+
+.img-thumbnail{
+
+    border-radius:15px;
+
+}
+
+/* ===========================
+   KPI Cards
+=========================== */
+
+.bg-primary,
+.bg-success,
+.bg-warning,
+.bg-danger,
+.bg-info,
+.bg-secondary,
+.bg-dark{
+
+    color:white;
+
+}
+
+.bg-warning{
+
+    color:black !important;
+
+}
+
+/* ===========================
+   Toast
+=========================== */
+
+.toast{
+
+    border-radius:12px;
+
+}
+
+/* ===========================
+   Footer
+=========================== */
+
+footer{
+
+    margin-top:60px;
+
+    background:#102542;
+
+    color:white;
+
+    padding:25px;
+
+    text-align:center;
+
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media(max-width:768px){
+
+.quick-action i{
+
+    font-size:24px;
+
+    margin-bottom:8px;
+
+}
+
+.dashboard-card i{
+
+    font-size:30px;
+
+    margin-bottom:12px;
+
+}
+}
+/* ===========================
+   Dashboard Gradient Cards
+=========================== */
+
+.users-card{
+    background:linear-gradient(135deg,#0d6efd,#4dabff) !important;
+    color:white !important;
+}
+
+.datasets-card{
+    background:linear-gradient(135deg,#198754,#43c463) !important;
+    color:white !important;
+}
+
+.reports-card{
+    background:linear-gradient(135deg,#ffb300,#ffd54f) !important;
+    color:#222 !important;
+}
+
+.activities-card{
+    background:linear-gradient(135deg,#dc3545,#ff6b6b) !important;
+    color:white !important;
+}
+
+.insights-card{
+    background:linear-gradient(135deg,#0dcaf0,#67e8f9) !important;
+    color:white !important;
+}
+
+.prediction-card{
+    background:linear-gradient(135deg,#6f42c1,#9d6cff) !important;
+    color:white !important;
+}
+
+.system-card{
+    background:linear-gradient(135deg,#212529,#495057) !important;
+    color:white !important;
+}
+
+.institute-card{
+    background:linear-gradient(135deg,#f8f9fa,#dee2e6) !important;
+    color:#222 !important;
+}
+.card-body{
+
+    padding:18px;
+
+}
+.dashboard-card h2{
+
+    font-size:22px;
+
+    font-weight:700;
+
+    margin-top:6px;
+
+    margin-bottom:8px;
+
+}
+
+.dashboard-card h5{
+
+    font-size:16px;
+
+    font-weight:600;
+
+}
+.dark-mode{
+    background:#121212 !important;
+    color:#f1f1f1 !important;
+}
+
+.dark-mode .card{
+    background:#1e1e1e !important;
+    color:#f1f1f1 !important;
+}
+
+.dark-mode .table{
+    color:#f1f1f1 !important;
+}
+
+.dark-mode .table td,
+.dark-mode .table th{
+    background:#1e1e1e !important;
+    color:#f1f1f1 !important;
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select,
+.dark-mode textarea{
+    background:#2a2a2a !important;
+    color:white !important;
+    border-color:#555 !important;
+}
+
+.dark-mode footer{
+    background:#000 !important;
+}
+/* ===========================
+   Professional Login Card
+=========================== */
+
+.login-card{
+    max-width:430px;
+    margin:auto;
+    border-radius:18px;
+}
+
+.login-card img{
+    width:90px;
+}
+
+.login-card h2{
+    font-size:2rem;
+    font-weight:700;
+}
+
+.login-card p{
+    font-size:15px;
+}
+
+.login-card label{
+    font-size:15px;
+    font-weight:600;
+}
+
+.login-card .form-control{
+    height:48px;
+    font-size:15px;
+    border-radius:10px;
+}
+
+.login-card .btn{
+    height:48px;
+    font-size:16px;
+    font-weight:600;
+    border-radius:10px;
+}
+
+.login-card a{
+    text-decoration:none;
+}
+
+.login-card a:hover{
+    text-decoration:underline;
+}
+
+.login-card hr{
+    margin-top:25px;
+    margin-bottom:20px;
+}

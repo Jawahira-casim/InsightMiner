@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-success text-white">
+            <h3><i class="bi bi-question-circle-fill"></i> Help & User Guide</h3>
+        </div>
+
+        <div class="card-body">
+
+            <div class="accordion" id="helpAccordion">
+
+                <!-- Upload -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#upload">
+                            📂 Upload Dataset
+                        </button>
+                    </h2>
+
+                    <div id="upload" class="accordion-collapse collapse show">
+                        <div class="accordion-body">
+                            Upload a CSV or Excel dataset to begin analysis.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cleaning -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#clean">
+                            🧹 Data Cleaning
+                        </button>
+                    </h2>
+
+                    <div id="clean" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            Remove duplicates, handle missing values and prepare your dataset.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#charts">
+                            📊 Charts
+                        </button>
+                    </h2>
+
+                    <div id="charts" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            Generate charts to visualize trends and patterns in the dataset.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#ai">
+                            🤖 AI Insights
+                        </button>
+                    </h2>
+
+                    <div id="ai" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            View automatically generated insights based on the uploaded dataset.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prediction -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#prediction">
+                            📈 Prediction
+                        </button>
+                    </h2>
+
+                    <div id="prediction" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            Run predictive models using machine learning algorithms.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#reports">
+                            📄 Reports
+                        </button>
+                    </h2>
+
+                    <div id="reports" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            Download PDF and Excel reports generated from your analysis.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#users">
+                            👥 User Management
+                        </button>
+                    </h2>
+
+                    <div id="users" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            Admins can create users, update roles, and manage user accounts.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#backup">
+                            💾 Backup Center
+                        </button>
+                    </h2>
+
+                    <div id="backup" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            Create, download and manage system backups.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

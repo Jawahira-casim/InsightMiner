@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-primary text-white">
+            <h3>📊 Dataset Comparison</h3>
+        </div>
+
+        <div class="card-body">
+
+            <form method="GET" class="row mb-4">
+
+                <div class="col-md-5">
+                    <label>Dataset 1</label>
+                    <select name="dataset1" class="form-select" required>
+                        <option value="">Select Dataset</option>
+                        {% for ds in datasets %}
+                        <option value="{{ ds.id }}">
+                            {{ ds.filename }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-5">
+                    <label>Dataset 2</label>
+                    <select name="dataset2" class="form-select" required>
+                        <option value="">Select Dataset</option>
+                        {% for ds in datasets %}
+                        <option value="{{ ds.id }}">
+                            {{ ds.filename }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-success w-120">
+                        Compare
+                    </button>
+                </div>
+
+            </form>
+            {% if error %}
+
+<div class="alert alert-danger mt-3">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    {{ error }}
+</div>
+
+{% endif %}
+
+            <p class="text-muted">
+                Select two uploaded datasets to compare their records, columns and upload dates.
+            </p>
+            {% if ds1 and ds2 %}
+
+<hr>
+
+<h4>Comparison Result</h4>
+
+<table class="table table-bordered table-striped mt-3">
+    <tr>
+        <th>Feature</th>
+        <th>{{ ds1.filename }}</th>
+        <th>{{ ds2.filename }}</th>
+    </tr>
+
+    <tr>
+        <td>Total Records</td>
+        <td>{{ ds1.rows_count }}</td>
+        <td>{{ ds2.rows_count }}</td>
+    </tr>
+
+    <tr>
+        <td>Total Columns</td>
+        <td>{{ ds1.columns_count }}</td>
+        <td>{{ ds2.columns_count }}</td>
+    </tr>
+
+    <tr>
+        <td>Upload Date</td>
+        <td>{{ ds1.upload_date }}</td>
+        <td>{{ ds2.upload_date }}</td>
+    </tr>
+</table>
+
+{% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

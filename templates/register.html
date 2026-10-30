@@ -1,0 +1,638 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+
+    .register-page {
+        min-height: calc(100vh - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 0;
+        background:
+            radial-gradient(
+                circle at top right,
+                rgba(37, 99, 235, 0.18),
+                transparent 35%
+            ),
+            linear-gradient(
+                135deg,
+                #eef4ff 0%,
+                #f8fbff 45%,
+                #e8f0ff 100%
+            );
+    }
+
+    .register-wrapper {
+        width: 100%;
+        max-width: 950px;
+        min-height: 500px;
+        overflow: hidden;
+        background: #ffffff;
+        border-radius: 28px;
+        box-shadow: 0 24px 60px rgba(13, 71, 161, 0.16);
+    }
+
+    .register-brand-panel {
+        min-height: 500px;
+        padding: 36px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        background:
+            radial-gradient(
+                circle at top right,
+                rgba(255, 255, 255, 0.18),
+                transparent 32%
+            ),
+            linear-gradient(
+                145deg,
+                #06162c 0%,
+                #0d47a1 55%,
+                #2563eb 100%
+            );
+    }
+
+    .register-brand-panel::before,
+    .register-brand-panel::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    .register-brand-panel::before {
+        width: 290px;
+        height: 290px;
+        top: -100px;
+        right: -80px;
+    }
+
+    .register-brand-panel::after {
+        width: 210px;
+        height: 210px;
+        bottom: -85px;
+        left: -65px;
+    }
+
+    .brand-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .brand-logo {
+        width: 92px;
+        padding: 8px;
+        margin-bottom: 16px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .brand-title {
+        margin-bottom: 8px;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .brand-subtitle {
+        margin-bottom: 14px;
+        font-size: 1.12rem;
+        font-weight: 650;
+        line-height: 1.5;
+    }
+
+    .brand-description {
+        max-width: 430px;
+        margin-bottom: 16px;
+        color: rgba(255, 255, 255, 0.84);
+        line-height: 1.6;
+    }
+
+    .brand-feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 10px;
+        font-size: 0.92rem;
+        color: rgba(255, 255, 255, 0.94);
+    }
+
+    .brand-feature-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.14);
+    }
+
+    .register-form-panel {
+        min-height: 500px;
+        padding: 38px 48px;
+        display: flex;
+        align-items: center;
+    }
+
+    .register-form-content {
+        width: 100%;
+        max-width: 430px;
+        margin: auto;
+    }
+
+    .mobile-logo {
+        width: 82px;
+        display: none;
+        margin: 0 auto 18px;
+        padding: 7px;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 8px 22px rgba(13, 71, 161, 0.12);
+    }
+
+    .register-title {
+        margin-bottom: 7px;
+        color: #10213a;
+        font-size: 2rem;
+        font-weight: 800;
+    }
+
+    .register-text {
+        margin-bottom: 22px;
+        color: #667085;
+        line-height: 1.6;
+    }
+
+    .form-label {
+        margin-bottom: 7px;
+        color: #26364d;
+        font-weight: 650;
+    }
+
+    .input-group-text {
+        min-width: 48px;
+        justify-content: center;
+        color: #0d47a1;
+        background: #f6f9fd;
+        border: 1px solid #dce4ef;
+        border-right: none;
+        border-radius: 12px 0 0 12px;
+    }
+
+    .form-control {
+        min-height: 50px;
+        padding: 12px 14px;
+        border: 1px solid #dce4ef;
+        border-radius: 0 12px 12px 0;
+        box-shadow: none;
+    }
+
+    .form-control:focus {
+        border-color: #4f83d1;
+        box-shadow: 0 0 0 0.2rem rgba(13, 71, 161, 0.11);
+    }
+
+    .password-group .form-control {
+        border-right: none;
+        border-radius: 0;
+    }
+
+    .password-toggle {
+        min-width: 50px;
+        color: #667085;
+        background: white;
+        border: 1px solid #dce4ef;
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+    }
+
+    .password-toggle:hover {
+        color: #0d47a1;
+        background: #f7faff;
+    }
+
+    .register-button {
+        min-height: 52px;
+        border: none;
+        border-radius: 13px;
+        font-size: 1rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #0d47a1, #2563eb);
+        box-shadow: 0 10px 24px rgba(13, 71, 161, 0.23);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .register-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(13, 71, 161, 0.30);
+    }
+
+    .login-section {
+        margin-top: 20px;
+        padding-top: 18px;
+        text-align: center;
+        color: #667085;
+        border-top: 1px solid #e7ebf2;
+    }
+
+    .login-link {
+        color: #0d47a1;
+        font-weight: 650;
+        text-decoration: none;
+    }
+
+    .login-link:hover {
+        text-decoration: underline;
+    }
+
+    .security-note {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 7px;
+        margin-top: 16px;
+        color: #7b8798;
+        font-size: 0.88rem;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 12px;
+    }
+
+    @media (max-width: 991px) {
+
+        .register-wrapper {
+            min-height: auto;
+        }
+
+        .register-brand-panel {
+            min-height: auto;
+            padding: 36px;
+        }
+
+        .register-form-panel {
+            min-height: auto;
+            padding: 40px 34px;
+        }
+    }
+
+    @media (max-width: 767px) {
+
+        .register-page {
+            min-height: auto;
+            padding: 24px 12px;
+        }
+
+        .register-brand-panel {
+            display: none;
+        }
+
+        .register-form-panel {
+            padding: 34px 24px;
+        }
+
+        .mobile-logo {
+            display: block;
+        }
+
+        .register-title,
+        .register-text {
+            text-align: center;
+        }
+
+        .register-title {
+            font-size: 1.8rem;
+        }
+    }
+
+</style>
+
+<section class="register-page">
+
+    <div class="container">
+
+        <div class="row justify-content-center">
+
+            <div class="col-xl-10 col-lg-11">
+
+                <div class="register-wrapper">
+
+                    <div class="row g-0">
+
+                        <!-- Left branding panel -->
+
+                        <div class="col-lg-6">
+
+                            <div class="register-brand-panel">
+
+                                <div class="brand-content">
+
+                                    <img
+                                        src="{{ url_for('static', filename='logo.png') }}"
+                                        class="brand-logo"
+                                        alt="IFPS Logo">
+
+                                    <h1 class="brand-title">
+                                        InsightMiner
+                                    </h1>
+
+                                    <div class="brand-subtitle">
+                                        Intelligent Data Mining and Analytics System
+                                    </div>
+
+                                    <p class="brand-description">
+
+                                        Create your secure account and access a complete
+                                        educational data mining platform for analysis,
+                                        visualization, prediction and reporting.
+
+                                    </p>
+
+                                    <div class="brand-feature">
+
+                                        <span class="brand-feature-icon">
+                                            <i class="bi bi-person-check"></i>
+                                        </span>
+
+                                        <span>
+                                            Secure account registration
+                                        </span>
+
+                                    </div>
+
+                                    <div class="brand-feature">
+
+                                        <span class="brand-feature-icon">
+                                            <i class="bi bi-cloud-arrow-up"></i>
+                                        </span>
+
+                                        <span>
+                                            Upload CSV and Excel datasets
+                                        </span>
+
+                                    </div>
+
+                                    <div class="brand-feature">
+
+                                        <span class="brand-feature-icon">
+                                            <i class="bi bi-bar-chart-line"></i>
+                                        </span>
+
+                                        <span>
+                                            Analyze and visualize educational data
+                                        </span>
+
+                                    </div>
+
+                                    <div class="brand-feature">
+
+                                        <span class="brand-feature-icon">
+                                            <i class="bi bi-cpu"></i>
+                                        </span>
+
+                                        <span>
+                                            Build machine learning prediction models
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Right registration form -->
+
+                        <div class="col-lg-6">
+
+                            <div class="register-form-panel">
+
+                                <div class="register-form-content">
+
+                                    <img
+                                        src="{{ url_for('static', filename='logo.png') }}"
+                                        class="mobile-logo"
+                                        alt="IFPS Logo">
+
+                                    <h2 class="register-title">
+                                        Create Account
+                                    </h2>
+
+                                    <p class="register-text">
+                                        Register to access the InsightMiner platform.
+                                    </p>
+
+                                    {% if error %}
+
+                                    <div class="alert alert-danger text-center">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+
+                                        {{ error }}
+
+                                    </div>
+
+                                    {% endif %}
+
+                                    {% if success %}
+
+                                    <div class="alert alert-success text-center">
+
+                                        <i class="bi bi-check-circle me-1"></i>
+
+                                        {{ success }}
+
+                                    </div>
+
+                                    {% endif %}
+
+                                    <form method="POST">
+
+                                        <!-- Username -->
+
+                                        <div class="mb-3">
+
+                                            <label
+                                                for="username"
+                                                class="form-label">
+
+                                                Username
+
+                                            </label>
+
+                                            <div class="input-group">
+
+                                                <span class="input-group-text">
+
+                                                    <i class="bi bi-person"></i>
+
+                                                </span>
+
+                                                <input
+                                                    type="text"
+                                                    id="username"
+                                                    name="username"
+                                                    class="form-control"
+                                                    placeholder="Enter username"
+                                                    autocomplete="username"
+                                                    minlength="3"
+                                                    required>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Password -->
+
+                                        <div class="mb-3">
+
+                                            <label
+                                                for="password"
+                                                class="form-label">
+
+                                                Password
+
+                                            </label>
+
+                                            <div class="input-group password-group">
+
+                                                <span class="input-group-text">
+
+                                                    <i class="bi bi-lock"></i>
+
+                                                </span>
+
+                                                <input
+                                                    type="password"
+                                                    id="password"
+                                                    name="password"
+                                                    class="form-control"
+                                                    placeholder="Enter password"
+                                                    autocomplete="new-password"
+                                                    minlength="6"
+                                                    required>
+
+                                                <button
+                                                    type="button"
+                                                    class="password-toggle"
+                                                    id="togglePassword"
+                                                    aria-label="Show or hide password">
+
+                                                    <i
+                                                        class="bi bi-eye"
+                                                        id="passwordIcon">
+                                                    </i>
+
+                                                </button>
+
+                                            </div>
+
+                                            <small class="text-muted">
+                                                Use at least 6 characters.
+                                            </small>
+
+                                        </div>
+
+                                        <!-- Register button -->
+
+                                        <div class="d-grid mt-4">
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-primary register-button">
+
+                                                <i class="bi bi-person-plus me-2"></i>
+
+                                                Create Account
+
+                                            </button>
+
+                                        </div>
+
+                                    </form>
+
+                                    <div class="login-section">
+
+                                        <span>
+                                            Already have an account?
+                                        </span>
+
+                                        <a
+                                            href="{{ url_for('auth.login') }}"
+                                            class="login-link ms-1">
+
+                                            Sign In
+
+                                        </a>
+
+                                    </div>
+
+                                    <div class="security-note">
+
+                                        <i class="bi bi-shield-lock"></i>
+
+                                        Your account information is securely protected
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const toggleButton =
+            document.getElementById("togglePassword");
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const passwordIcon =
+            document.getElementById("passwordIcon");
+
+        if (toggleButton && passwordInput && passwordIcon) {
+
+            toggleButton.addEventListener("click", function () {
+
+                const passwordIsHidden =
+                    passwordInput.type === "password";
+
+                passwordInput.type =
+                    passwordIsHidden ? "text" : "password";
+
+                passwordIcon.classList.toggle("bi-eye");
+                passwordIcon.classList.toggle("bi-eye-slash");
+
+            });
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}

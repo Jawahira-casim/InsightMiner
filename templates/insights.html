@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>🤖 AI-Powered Insights</h3>
+        </div>
+
+        <div class="card-body">
+            <h4>⭐ Executive Summary</h4>
+            <p>{{ executive_summary }}</p>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4>📋 Data Quality Report</h4>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <tr>
+                    <th width="300">Overall Quality Score</th>
+                    <td>{{ quality_score }}%</td>
+                </tr>
+
+                <tr>
+                    <th>Missing Values</th>
+                    <td>{{ missing }}</td>
+                </tr>
+
+                <tr>
+                    <th>Duplicate Rows</th>
+                    <td>{{ duplicates }}</td>
+                </tr>
+
+                <tr>
+                    <th>Numeric Columns</th>
+                    <td>{{ numeric_count }}</td>
+                </tr>
+
+                <tr>
+                    <th>Text Columns</th>
+                    <td>{{ categorical_count }}</td>
+                </tr>
+
+                <tr>
+                    <th>Total Records</th>
+                    <td>{{ rows }}</td>
+                </tr>
+
+                <tr>
+                    <th>Total Columns</th>
+                    <td>{{ columns }}</td>
+                </tr>
+
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        {% if quality_score >= 90 %}
+                            🟢 Excellent Dataset
+                        {% elif quality_score >= 75 %}
+                            🟡 Good Dataset
+                        {% elif quality_score >= 50 %}
+                            🟠 Fair Dataset
+                        {% else %}
+                            🔴 Poor Dataset
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Recommendation</th>
+                    <td>
+                        {% if quality_score >= 90 %}
+                            Dataset is suitable for educational data analysis, predictive modelling, visualization, and professional report generation.
+                        {% elif quality_score >= 75 %}
+                            Dataset is suitable for analysis. Minor cleaning is recommended.
+                        {% else %}
+                            Clean the dataset before prediction and advanced analysis.
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-success text-white">
+            <h4>📊 Dataset Statistics</h4>
+        </div>
+
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h2>{{ rows }}</h2>
+                    <p>Total Records</p>
+                </div>
+
+                <div class="col-md-3">
+                    <h2>{{ columns }}</h2>
+                    <p>Total Columns</p>
+                </div>
+
+                <div class="col-md-3">
+                    <h2>{{ numeric_count }}</h2>
+                    <p>Numeric Columns</p>
+                </div>
+
+                <div class="col-md-3">
+                    <h2>{{ categorical_count }}</h2>
+                    <p>Text Columns</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-info text-white">
+            <h4>📈 AI Trend Analysis</h4>
+        </div>
+
+        <div class="card-body">
+            <ul class="list-group">
+                {% for item in trend_insights %}
+                <li class="list-group-item">
+                    {{ item }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-warning">
+            <h4>💡 Smart Recommendations</h4>
+        </div>
+
+        <div class="card-body">
+            <ul class="list-group">
+                {% for item in recommendations %}
+                <li class="list-group-item">
+                    {{ item }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h4>🎯 AI Conclusion</h4>
+        </div>
+
+        <div class="card-body">
+            <p>
+                Based on the uploaded dataset, InsightMiner determined a
+                <strong>{{ quality_status }}</strong>
+                data quality level with an overall quality score of
+                <strong>{{ quality_score }}%</strong>.
+
+                {% if quality_score >= 90 %}
+                    The dataset demonstrates excellent quality and is suitable for educational data analysis,
+                    predictive modelling, visualization, and decision support.
+                {% elif quality_score >= 75 %}
+                    The dataset is suitable for analysis after minor cleaning.
+                {% else %}
+                    Data cleaning is recommended before applying predictive analytics.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <a href="/dashboard" class="btn btn-primary">
+        ⬅ Back to Dashboard
+    </a>
+
+</div>
+
+{% endblock %}

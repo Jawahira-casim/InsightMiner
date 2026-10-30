@@ -1,0 +1,680 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+
+    .login-page {
+
+    min-height: 100vh;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 20px 0;
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(37, 99, 235, 0.18),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #eef4ff 0%,
+            #f8fbff 45%,
+            #e8f0ff 100%
+        );
+
+}
+
+    .login-wrapper {
+        width:100%;
+    max-width:950px;
+    min-height:470px;
+        background: #ffffff;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(13, 71, 161, 0.16);
+    }
+
+    /* Left panel */
+
+    .login-brand-panel {
+        min-height: 500px;
+        padding: 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        background:
+            radial-gradient(
+                circle at top right,
+                rgba(255, 255, 255, 0.18),
+                transparent 32%
+            ),
+            linear-gradient(
+                145deg,
+                #06162c 0%,
+                #0d47a1 55%,
+                #2563eb 100%
+            );
+    }
+
+    .login-brand-panel::before,
+    .login-brand-panel::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.07);
+    }
+
+    .login-brand-panel::before {
+        width: 290px;
+        height: 290px;
+        top: -100px;
+        right: -80px;
+    }
+
+    .login-brand-panel::after {
+        width: 210px;
+        height: 210px;
+        bottom: -85px;
+        left: -65px;
+    }
+
+    .brand-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .brand-logo {
+        width: 90px;
+        background: white;
+        padding: 8px;
+        border-radius: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .brand-title {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 10px;
+    }
+
+    .brand-subtitle {
+        font-size: 1.13rem;
+        font-weight: 650;
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    .brand-description {
+        color: rgba(255, 255, 255, 0.84);
+        line-height: 1.7;
+        max-width: 440px;
+        margin-bottom: 20px;
+    }
+
+    .brand-feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+        color: rgba(255, 255, 255, 0.94);
+        font-size: 0.9rem;
+    }
+
+    .brand-feature-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.14);
+        flex-shrink: 0;
+    }
+
+    /* Right panel */
+
+    .login-form-panel {
+        min-height: 500px;
+        padding: 32px 40px;
+        display: flex;
+        align-items: center;
+    }
+
+    .login-form-content {
+        width: 100%;
+        max-width: 430px;
+        margin: auto;
+    }
+
+    .mobile-logo {
+        width: 82px;
+        display: none;
+        margin: 0 auto 18px;
+        background: white;
+        border-radius: 14px;
+        padding: 7px;
+        box-shadow: 0 8px 22px rgba(13, 71, 161, 0.12);
+    }
+
+    .welcome-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #10213a;
+        margin-bottom: 7px;
+    }
+
+    .welcome-text {
+        color: #667085;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .form-label {
+        color: #26364d;
+        font-weight: 650;
+        margin-bottom: 7px;
+    }
+
+    .input-group-text {
+        border-radius: 12px 0 0 12px;
+        border: 1px solid #dce4ef;
+        border-right: none;
+        background: #f6f9fd;
+        color: #0d47a1;
+        min-width: 48px;
+        justify-content: center;
+    }
+
+    .form-control {
+        min-height: 50px;
+        border: 1px solid #dce4ef;
+        border-radius: 0 12px 12px 0;
+        padding: 12px 14px;
+        box-shadow: none;
+    }
+
+    .form-control:focus {
+        border-color: #4f83d1;
+        box-shadow: 0 0 0 0.2rem rgba(13, 71, 161, 0.11);
+    }
+
+    .password-group .form-control {
+        border-radius: 0;
+        border-right: none;
+    }
+
+    .password-toggle {
+        min-width: 50px;
+        border: 1px solid #dce4ef;
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+        background: white;
+        color: #667085;
+    }
+
+    .password-toggle:hover {
+        color: #0d47a1;
+        background: #f7faff;
+    }
+
+    .remember-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin: 18px 0 20px;
+    }
+
+    .form-check-label {
+        color: #5f6b7a;
+    }
+
+    .forgot-link,
+    .register-link {
+        color: #0d47a1;
+        font-weight: 650;
+        text-decoration: none;
+    }
+
+    .forgot-link:hover,
+    .register-link:hover {
+        text-decoration: underline;
+    }
+
+    .login-button {
+        min-height: 52px;
+        border: none;
+        border-radius: 13px;
+        font-weight: 700;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #0d47a1, #2563eb);
+        box-shadow: 0 10px 24px rgba(13, 71, 161, 0.23);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .login-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(13, 71, 161, 0.30);
+    }
+
+    .register-section {
+        margin-top: 22px;
+        padding-top: 20px;
+        border-top: 1px solid #e7ebf2;
+        text-align: center;
+        color: #667085;
+    }
+
+    .security-note {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 7px;
+        color: #7b8798;
+        font-size: 0.88rem;
+        margin-top: 18px;
+    }
+
+    .alert {
+        border-radius: 12px;
+        border: none;
+    }
+
+    @media (max-width: 991px) {
+
+        .login-wrapper {
+            min-height: auto;
+        }
+
+        .login-brand-panel {
+            min-height: auto;
+            padding: 38px;
+        }
+
+        .login-form-panel {
+            min-height: auto;
+            padding: 42px 35px;
+        }
+
+        .brand-title {
+            font-size: 2.1rem;
+        }
+    }
+
+    @media (max-width: 767px) {
+
+        .login-page {
+            min-height: auto;
+            padding: 25px 12px;
+        }
+
+        .login-brand-panel {
+            display: none;
+        }
+
+        .login-form-panel {
+            padding: 36px 24px;
+        }
+
+        .mobile-logo {
+            display: block;
+        }
+
+        .welcome-title,
+        .welcome-text {
+            text-align: center;
+        }
+
+        .welcome-title {
+            font-size: 1.8rem;
+        }
+
+        .remember-row {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+
+</style>
+
+<section class="login-page">
+
+    <div class="container">
+
+        <div class="row justify-content-center">
+
+            <div class="col-xl-10 col-lg-11">
+
+                <div class="login-wrapper">
+
+                    <div class="row g-0">
+
+                        <!-- Left branding panel -->
+
+                        <div class="col-lg-6">
+
+                            <div class="login-brand-panel">
+
+                                <div class="brand-content">
+
+                                    <img
+                                        src="{{ url_for('static', filename='logo.png') }}"
+                                        class="brand-logo"
+                                        alt="IFPS Logo">
+
+                                    <h1 class="brand-title">
+                                        InsightMiner
+                                    </h1>
+
+                                    <div class="brand-subtitle">
+                                        Intelligent Data Mining and Analytics System
+                                    </div>
+
+                                    <p class="brand-description">
+
+                                        Access a secure educational analytics platform
+                                        designed to transform raw datasets into meaningful
+                                        insights, visualizations, predictions and
+                                        professional reports.
+
+                                    </p>
+
+                                    <div class="brand-feature">
+
+                                        <span class="brand-feature-icon">
+                                            <i class="bi bi-cloud-arrow-up"></i>
+                                        </span>
+
+                                        <span>
+                                            Upload CSV and Excel datasets
+                                        </span>
+
+                                    </div>
+
+                                    <div class="brand-feature">
+
+                                        <span class="brand-feature-icon">
+                                            <i class="bi bi-bar-chart-line"></i>
+                                        </span>
+
+                                        <span>
+                                            Analyze data using statistics and charts
+                                        </span>
+
+                                    </div>
+
+                                    <div class="brand-feature">
+
+                                        <span class="brand-feature-icon">
+                                            <i class="bi bi-cpu"></i>
+                                        </span>
+
+                                        <span>
+                                            Build machine learning prediction models
+                                        </span>
+
+                                    </div>
+
+                                    
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Right login form -->
+
+                        <div class="col-lg-6">
+
+                            <div class="login-form-panel">
+
+                                <div class="login-form-content">
+
+                                    <img
+                                        src="{{ url_for('static', filename='logo.png') }}"
+                                        class="mobile-logo"
+                                        alt="IFPS Logo">
+
+                                    <h2 class="welcome-title">
+                                        Welcome Back
+                                    </h2>
+
+                                    <p class="welcome-text">
+                                        Sign in to continue to your InsightMiner account.
+                                    </p>
+
+                                    {% if error %}
+
+                                    <div class="alert alert-danger text-center">
+
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+
+                                        {{ error }}
+
+                                    </div>
+
+                                    {% endif %}
+
+                                    <form method="POST">
+
+                                        <!-- Username -->
+
+                                        <div class="mb-3">
+
+                                            <label
+                                                for="username"
+                                                class="form-label">
+
+                                                Username
+
+                                            </label>
+
+                                            <div class="input-group">
+
+                                                <span class="input-group-text">
+
+                                                    <i class="bi bi-person"></i>
+
+                                                </span>
+
+                                                <input
+                                                    type="text"
+                                                    id="username"
+                                                    name="username"
+                                                    class="form-control"
+                                                    placeholder="Enter your username"
+                                                    autocomplete="username"
+                                                    required>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Password -->
+
+                                        <div class="mb-3">
+
+                                            <label
+                                                for="password"
+                                                class="form-label">
+
+                                                Password
+
+                                            </label>
+
+                                            <div class="input-group password-group">
+
+                                                <span class="input-group-text">
+
+                                                    <i class="bi bi-lock"></i>
+
+                                                </span>
+
+                                                <input
+                                                    type="password"
+                                                    id="password"
+                                                    name="password"
+                                                    class="form-control"
+                                                    placeholder="Enter your password"
+                                                    autocomplete="current-password"
+                                                    required>
+
+                                                <button
+                                                    type="button"
+                                                    class="password-toggle"
+                                                    id="togglePassword"
+                                                    aria-label="Show or hide password">
+
+                                                    <i
+                                                        class="bi bi-eye"
+                                                        id="passwordIcon">
+                                                    </i>
+
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Remember and forgot password -->
+
+                                        <div class="remember-row">
+
+                                            <div class="form-check">
+
+                                                <input
+                                                    class="form-check-input"
+                                                    type="checkbox"
+                                                    name="remember"
+                                                    id="remember">
+
+                                                <label
+                                                    class="form-check-label"
+                                                    for="remember">
+
+                                                    Remember me
+
+                                                </label>
+
+                                            </div>
+
+                                            <a
+                                                href="/forgot_password"
+                                                class="forgot-link">
+
+                                                Forgot Password?
+
+                                            </a>
+
+                                        </div>
+
+                                        <!-- Login button -->
+
+                                        <div class="d-grid">
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-primary login-button">
+
+                                                <i class="bi bi-box-arrow-in-right me-2"></i>
+
+                                                Sign In Securely
+
+                                            </button>
+
+                                        </div>
+
+                                    </form>
+
+                                    <!-- Registration -->
+
+                                    <div class="register-section">
+
+                                        <span>
+                                            Don't have an account?
+                                        </span>
+
+                                        <a
+                                            href="{{ url_for('auth.register') }}"
+                                            class="register-link ms-1">
+
+                                            Create New Account
+
+                                        </a>
+
+                                    </div>
+
+                                    <div class="security-note">
+
+                                        <i class="bi bi-shield-lock"></i>
+
+                                        Secure access for authorized users
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const toggleButton =
+            document.getElementById("togglePassword");
+
+        const passwordInput =
+            document.getElementById("password");
+
+        const passwordIcon =
+            document.getElementById("passwordIcon");
+
+        if (toggleButton && passwordInput && passwordIcon) {
+
+            toggleButton.addEventListener("click", function () {
+
+                const passwordIsHidden =
+                    passwordInput.type === "password";
+
+                passwordInput.type =
+                    passwordIsHidden ? "text" : "password";
+
+                passwordIcon.classList.toggle("bi-eye");
+                passwordIcon.classList.toggle("bi-eye-slash");
+
+            });
+
+        }
+
+    });
+
+</script>
+
+{% endblock %}

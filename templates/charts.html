@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg border-0">
+
+        <div class="card-header bg-primary text-white">
+            <h2>📊 InsightMiner Charts Dashboard</h2>
+        </div>
+
+        <div class="card-body">
+
+            <p class="lead">
+                Generate different visualizations for the uploaded dataset.
+            </p>
+
+            <div class="row text-center mb-4">
+
+                <div class="col">
+                    <a href="/generate_chart/hist" class="btn btn-primary chart-btn">
+                        <div class="icon">📊</div>
+                        <div>Histogram</div>
+                    </a>
+                </div>
+
+                <div class="col">
+                    <a href="/generate_chart/bar" class="btn btn-success chart-btn">
+                        <div class="icon">📈</div>
+                        <div>Bar Chart</div>
+                    </a>
+                </div>
+
+                <div class="col">
+                    <a href="/generate_chart/line" class="btn btn-info chart-btn">
+                        <div class="icon">📉</div>
+                        <div>Line Chart</div>
+                    </a>
+                </div>
+
+                <div class="col">
+                    <a href="/generate_chart/pie" class="btn btn-warning chart-btn">
+                        <div class="icon">🥧</div>
+                        <div>Pie Chart</div>
+                    </a>
+                </div>
+
+                <div class="col">
+                    <a href="/generate_chart/scatter" class="btn btn-secondary chart-btn">
+                        <div class="icon">🔵</div>
+                        <div>Scatter Plot</div>
+                    </a>
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="text-center">
+
+                <img
+                    src="{{ url_for('static', filename='chart.png') }}"
+                    class="img-fluid rounded shadow border"
+                    style="max-height:600px;"
+                >
+
+            </div>
+
+            <hr>
+
+            <div class="row">
+
+                <div class="col-md-4 mb-2">
+
+                    <a href="/download_chart"
+                       class="btn btn-success w-100">
+
+                        ⬇ Download Chart
+
+                    </a>
+
+                </div>
+
+                <div class="col-md-4 mb-2">
+
+                    <a href="/download_heatmap"
+                       class="btn btn-primary w-100">
+
+                        ⬇ Download Heatmap
+
+                    </a>
+
+                </div>
+
+                <div class="col-md-4 mb-2">
+
+                    <a href="/dashboard"
+                       class="btn btn-dark w-100">
+
+                        ⬅ Back to Dashboard
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+
+
+
+
+.chart-btn{
+    width:135px;
+    height:75px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    border-radius:10px;
+
+    color:white !important;
+    text-decoration:none;
+
+    margin:auto;
+
+    font-size:16px;
+    font-weight:600;
+}
+
+.chart-btn:hover{
+    transform:scale(1.03);
+    transition:0.3s;
+}
+
+.icon{
+    font-size:18px;
+    margin-bottom:3px;
+}
+</style>
+
+
+
+
+{% endblock %}

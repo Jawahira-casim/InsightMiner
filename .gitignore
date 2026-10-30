@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local configuration containing credentials
+instance/
+config.local.py
+
+# Database backups and local databases
+backups/
+*.sql
+*.sqlite3
+*.db
+
+# Uploaded datasets and generated reports
+uploads/
+reports/
+*.xlsx
+*.csv
+*.pdf
+
+# Python editor settings
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db

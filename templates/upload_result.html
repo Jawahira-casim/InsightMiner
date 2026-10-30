@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>📊 Dataset Summary</h3>
+        </div>
+
+        <div class="card-body">
+
+            <div class="mb-3">
+                <a href="/clean_data" class="btn btn-secondary">🧹 Clean Dataset</a>
+                <a href="/download_report" class="btn btn-success">📊 Excel Report</a>
+                <a href="/download_pdf" class="btn btn-danger">📄 PDF Report</a>
+                <a href="/charts" class="btn btn-info">📈 Charts</a>
+            </div>
+
+            <h4>Dataset Information</h4>
+
+            <table class="table table-bordered">
+                <tr><th>Total Records</th><td>{{ rows }}</td></tr>
+                <tr><th>Total Columns</th><td>{{ columns }}</td></tr>
+                <tr><th>Numeric Columns</th><td>{{ numeric_cols|length }}</td></tr>
+                <tr><th>Total Missing Values</th><td>{{ missing.sum() }}</td></tr>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-dark text-white">
+            <h4>Column Names</h4>
+        </div>
+        <div class="card-body">
+            {% for col in df.columns %}
+                <a href="/column_info/{{ col }}" class="badge bg-primary text-decoration-none m-1">
+                    {{ col }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-warning">
+            <h4>Missing Values</h4>
+        </div>
+        <div class="card-body table-responsive">
+            {{ missing.to_frame(name='Missing Count').to_html(classes='table table-bordered table-striped') | safe }}
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-success text-white">
+            <h4>Statistical Summary</h4>
+        </div>
+        <div class="card-body table-responsive">
+            {{ stats.to_html(classes='table table-bordered table-striped') | safe }}
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-info text-white">
+            <h4>Correlation Matrix</h4>
+        </div>
+        <div class="card-body table-responsive">
+            {{ correlation.to_html(classes='table table-bordered table-striped') | safe }}
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Visualizations</h4>
+        </div>
+        <div class="card-body text-center">
+            <img src="/static/heatmap.png" class="img-fluid rounded shadow mb-4">
+            <img src="/static/chart.png" class="img-fluid rounded shadow">
+        </div>
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h4>First 10 Rows</h4>
+        </div>
+        <div class="card-body table-responsive">
+            {{ df.head(10).to_html(classes='table table-bordered table-hover') | safe }}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
