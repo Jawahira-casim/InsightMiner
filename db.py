@@ -14,3 +14,5 @@ def get_db_connection():
         database=os.getenv("DB_NAME", "insightminer")
     )
     return conn
+def get_connection():
+    return get_db_connection()
