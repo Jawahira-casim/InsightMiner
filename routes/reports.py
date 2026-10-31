@@ -618,6 +618,7 @@ def download_report():
 # PDF Report
 # ---------------------------------------------------------
 
+
 @reports_bp.route("/download_pdf")
 @role_required("Admin", "Analyst", "Viewer")
 def download_pdf():
@@ -626,6 +627,11 @@ def download_pdf():
         return "No dataset uploaded."
 
     df = shared.current_df
+    prediction = getattr(
+        shared,
+        "latest_prediction_result",
+        None
+    )
 
     output = BytesIO()
 
@@ -639,7 +645,6 @@ def download_pdf():
     )
 
     styles = getSampleStyleSheet()
-
     content = []
 
     # -----------------------------------------------------
@@ -660,9 +665,7 @@ def download_pdf():
         )
     )
 
-    content.append(
-        Spacer(1, 16)
-    )
+    content.append(Spacer(1, 16))
 
     # -----------------------------------------------------
     # Dataset Summary
@@ -679,14 +682,10 @@ def download_pdf():
     total_columns = df.shape[1]
 
     numeric_columns = len(
-        df.select_dtypes(
-            include="number"
-        ).columns
+        df.select_dtypes(include="number").columns
     )
 
-    total_missing = int(
-        df.isnull().sum().sum()
-    )
+    total_missing = int(df.isnull().sum().sum())
 
     summary_data = [
         ["Item", "Value"],
@@ -698,55 +697,21 @@ def download_pdf():
 
     summary_table = Table(
         summary_data,
-        colWidths=[
-            7 * cm,
-            5 * cm
-        ]
+        colWidths=[7 * cm, 5 * cm]
     )
 
     summary_table.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                colors.HexColor("#0d6efd")
-            ),
-            (
-                "TEXTCOLOR",
-                (0, 0),
-                (-1, 0),
-                colors.white
-            ),
-            (
-                "FONTNAME",
-                (0, 0),
-                (-1, 0),
-                "Helvetica-Bold"
-            ),
-            (
-                "GRID",
-                (0, 0),
-                (-1, -1),
-                0.5,
-                colors.grey
-            ),
-            (
-                "VALIGN",
-                (0, 0),
-                (-1, -1),
-                "MIDDLE"
-            )
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0d6efd")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
         ])
     )
 
-    content.append(
-        summary_table
-    )
-
-    content.append(
-        Spacer(1, 16)
-    )
+    content.append(summary_table)
+    content.append(Spacer(1, 16))
 
     # -----------------------------------------------------
     # Column Names
@@ -761,67 +726,30 @@ def download_pdf():
         )
     )
 
-    column_data = [
-        ["No.", "Column Name"]
-    ]
+    column_data = [["No.", "Column Name"]]
 
-    for index, column in enumerate(
-        df.columns,
-        start=1
-    ):
-        column_data.append([
-            index,
-            str(column)
-        ])
+    for index, column in enumerate(df.columns, start=1):
+        column_data.append([index, str(column)])
 
     column_table = Table(
         column_data,
-        colWidths=[
-            2 * cm,
-            12 * cm
-        ]
+        colWidths=[2 * cm, 12 * cm]
     )
 
     column_table.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                colors.HexColor("#343a40")
-            ),
-            (
-                "TEXTCOLOR",
-                (0, 0),
-                (-1, 0),
-                colors.white
-            ),
-            (
-                "FONTNAME",
-                (0, 0),
-                (-1, 0),
-                "Helvetica-Bold"
-            ),
-            (
-                "GRID",
-                (0, 0),
-                (-1, -1),
-                0.5,
-                colors.grey
-            )
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#343a40")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey)
         ])
     )
 
-    content.append(
-        column_table
-    )
-
-    content.append(
-        PageBreak()
-    )
+    content.append(column_table)
+    content.append(PageBreak())
 
     # -----------------------------------------------------
-    # Missing Values by Column
+    # Missing Values
     # -----------------------------------------------------
 
     content.append(
@@ -831,65 +759,34 @@ def download_pdf():
         )
     )
 
-    missing_data = [
-        ["Column", "Missing Count"]
-    ]
+    missing_data = [["Column", "Missing Count"]]
 
     missing_series = df.isnull().sum()
 
     for column, count in missing_series.items():
-        missing_data.append([
-            str(column),
-            int(count)
-        ])
+        missing_data.append([str(column), int(count)])
 
     missing_table = Table(
         missing_data,
-        colWidths=[
-            12 * cm,
-            5 * cm
-        ]
+        colWidths=[12 * cm, 5 * cm]
     )
 
     missing_table.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                colors.HexColor("#ffc107")
-            ),
-            (
-                "FONTNAME",
-                (0, 0),
-                (-1, 0),
-                "Helvetica-Bold"
-            ),
-            (
-                "GRID",
-                (0, 0),
-                (-1, -1),
-                0.5,
-                colors.grey
-            )
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#ffc107")),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey)
         ])
     )
 
-    content.append(
-        missing_table
-    )
-
-    content.append(
-        Spacer(1, 18)
-    )
+    content.append(missing_table)
+    content.append(Spacer(1, 18))
 
     # -----------------------------------------------------
-    # Statistical Summary
+    # Statistical Summary and Correlation Matrix
     # -----------------------------------------------------
 
-    numeric_df = df.select_dtypes(
-        include="number"
-    )
+    numeric_df = df.select_dtypes(include="number")
 
     if not numeric_df.empty:
 
@@ -901,23 +798,18 @@ def download_pdf():
         )
 
         stats_df = (
-            numeric_df
-            .describe()
+            numeric_df.describe()
             .round(2)
             .reset_index()
         )
 
         stats_data = [
-            [
-                str(value)
-                for value in stats_df.columns.tolist()
-            ]
+            [str(value) for value in stats_df.columns]
         ]
 
         for row in stats_df.values.tolist():
             stats_data.append([
-                str(value)
-                for value in row
+                str(value) for value in row
             ])
 
         stats_table = Table(
@@ -927,51 +819,16 @@ def download_pdf():
 
         stats_table.setStyle(
             TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.HexColor("#198754")
-                ),
-                (
-                    "TEXTCOLOR",
-                    (0, 0),
-                    (-1, 0),
-                    colors.white
-                ),
-                (
-                    "FONTNAME",
-                    (0, 0),
-                    (-1, 0),
-                    "Helvetica-Bold"
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.4,
-                    colors.grey
-                ),
-                (
-                    "FONTSIZE",
-                    (0, 0),
-                    (-1, -1),
-                    7
-                )
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#198754")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+                ("FONTSIZE", (0, 0), (-1, -1), 7)
             ])
         )
 
-        content.append(
-            stats_table
-        )
-
-        content.append(
-            PageBreak()
-        )
-
-        # -------------------------------------------------
-        # Correlation Matrix
-        # -------------------------------------------------
+        content.append(stats_table)
+        content.append(PageBreak())
 
         content.append(
             Paragraph(
@@ -980,24 +837,15 @@ def download_pdf():
             )
         )
 
-        corr_df = (
-            numeric_df
-            .corr()
-            .round(2)
-            .reset_index()
-        )
+        corr_df = numeric_df.corr().round(2).reset_index()
 
         corr_data = [
-            [
-                str(value)
-                for value in corr_df.columns.tolist()
-            ]
+            [str(value) for value in corr_df.columns]
         ]
 
         for row in corr_df.values.tolist():
             corr_data.append([
-                str(value)
-                for value in row
+                str(value) for value in row
             ])
 
         corr_table = Table(
@@ -1007,45 +855,20 @@ def download_pdf():
 
         corr_table.setStyle(
             TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.HexColor("#0dcaf0")
-                ),
-                (
-                    "FONTNAME",
-                    (0, 0),
-                    (-1, 0),
-                    "Helvetica-Bold"
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.4,
-                    colors.grey
-                ),
-                (
-                    "FONTSIZE",
-                    (0, 0),
-                    (-1, -1),
-                    6
-                )
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0dcaf0")),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+                ("FONTSIZE", (0, 0), (-1, -1), 6)
             ])
         )
 
-        content.append(
-            corr_table
-        )
-
-    content.append(
-        PageBreak()
-    )
+        content.append(corr_table)
 
     # -----------------------------------------------------
     # First 10 Rows
     # -----------------------------------------------------
+
+    content.append(PageBreak())
 
     content.append(
         Paragraph(
@@ -1054,22 +877,15 @@ def download_pdf():
         )
     )
 
-    first_rows = (
-        df.head(10)
-        .round(2)
-    )
+    first_rows = df.head(10).round(2)
 
     first_rows_data = [
-        [
-            str(column)
-            for column in first_rows.columns
-        ]
+        [str(column) for column in first_rows.columns]
     ]
 
     for row in first_rows.values.tolist():
         first_rows_data.append([
-            str(value)
-            for value in row
+            str(value) for value in row
         ])
 
     first_rows_table = Table(
@@ -1079,54 +895,21 @@ def download_pdf():
 
     first_rows_table.setStyle(
         TableStyle([
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                colors.HexColor("#6c757d")
-            ),
-            (
-                "TEXTCOLOR",
-                (0, 0),
-                (-1, 0),
-                colors.white
-            ),
-            (
-                "FONTNAME",
-                (0, 0),
-                (-1, 0),
-                "Helvetica-Bold"
-            ),
-            (
-                "GRID",
-                (0, 0),
-                (-1, -1),
-                0.4,
-                colors.grey
-            ),
-            (
-                "FONTSIZE",
-                (0, 0),
-                (-1, -1),
-                6
-            )
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#6c757d")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+            ("FONTSIZE", (0, 0), (-1, -1), 6)
         ])
     )
 
-    content.append(
-        first_rows_table
-    )
-    # ==========================================
-# MACHINE LEARNING PREDICTION RESULTS
-# ==========================================
+    content.append(first_rows_table)
 
-    prediction = shared.latest_prediction_result
+    # -----------------------------------------------------
+    # Machine Learning Prediction Results
+    # -----------------------------------------------------
 
-    if prediction:
-
-        content.append(Spacer(1, 18))
-
-    content.append(PageBreak())    
+    content.append(PageBreak())
 
     content.append(
         Paragraph(
@@ -1137,421 +920,264 @@ def download_pdf():
 
     content.append(Spacer(1, 8))
 
-    content.append(
-        Paragraph(
-            f"<b>Algorithm:</b> "
-            f"{prediction['algorithm_name']}",
-            styles["Normal"]
-        )
-    )
-
-    content.append(
-        Paragraph(
-            f"<b>Target Column:</b> "
-            f"{prediction['target']}",
-            styles["Normal"]
-        )
-    )
-
-    content.append(
-        Paragraph(
-            f"<b>Training Records:</b> "
-            f"{prediction['training_records']}",
-            styles["Normal"]
-        )
-    )
-
-    content.append(
-        Paragraph(
-            f"<b>Testing Records:</b> "
-            f"{prediction['testing_records']}",
-            styles["Normal"]
-        )
-    )
-
-    content.append(Spacer(1, 10))
-
-    # --------------------------------------
-    # Regression
-    # --------------------------------------
-
-    if prediction["task_type"] == "regression":
+    if prediction:
 
         content.append(
             Paragraph(
-                f"<b>R² Score:</b> "
-                f"{prediction['r2']:.3f}",
+                f"<b>Algorithm:</b> {prediction.get('algorithm_name', 'N/A')}",
                 styles["Normal"]
             )
         )
 
         content.append(
             Paragraph(
-                f"<b>Mean Absolute Error:</b> "
-                f"{prediction['mae']:.3f}",
+                f"<b>Target Column:</b> {prediction.get('target', 'N/A')}",
                 styles["Normal"]
             )
         )
 
         content.append(
             Paragraph(
-                f"<b>Root Mean Squared Error:</b> "
-                f"{prediction['rmse']:.3f}",
+                f"<b>Training Records:</b> {prediction.get('training_records', 'N/A')}",
                 styles["Normal"]
             )
         )
 
         content.append(
             Paragraph(
-                f"<b>5-Fold CV R²:</b> "
-                f"{prediction['cv_score']:.3f}",
+                f"<b>Testing Records:</b> {prediction.get('testing_records', 'N/A')}",
                 styles["Normal"]
             )
         )
 
-    # --------------------------------------
-    # Classification
-    # --------------------------------------
-
-    elif prediction["task_type"] == "classification":
-
         # --------------------------------------
-        # Classification Performance
+        # Regression
         # --------------------------------------
 
-        content.append(Spacer(1, 12))
+        if prediction.get("task_type") == "regression":
 
-        content.append(
-            Paragraph(
-                "Classification Performance",
-                styles["Heading3"]
-            )
-        )
-
-        performance_data = [
-            ["Metric", "Value"],
-            [
-                "Accuracy",
-                f"{prediction.get('accuracy', 0) * 100:.2f}%"
-            ],
-            [
-                "Precision",
-                f"{prediction.get('precision', 0):.3f}"
-            ],
-            [
-                "Recall",
-                f"{prediction.get('recall', 0):.3f}"
-            ],
-            [
-                "F1 Score",
-                f"{prediction.get('f1', 0):.3f}"
-            ],
-            [
-                "5-Fold CV Accuracy",
-                f"{prediction.get('cv_score', 0) * 100:.2f}%"
-            ]
-        ]
-
-        performance_table = Table(
-            performance_data,
-            colWidths=[220, 120]
-        )
-
-        performance_table.setStyle(
-            TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.HexColor("#0d6efd")
-                ),
-                (
-                    "TEXTCOLOR",
-                    (0, 0),
-                    (-1, 0),
-                    colors.white
-                ),
-                (
-                    "FONTNAME",
-                    (0, 0),
-                    (-1, 0),
-                    "Helvetica-Bold"
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
-                (
-                    "PADDING",
-                    (0, 0),
-                    (-1, -1),
-                    6
-                )
-            ])
-        )
-
-        content.append(performance_table)
-
-        # --------------------------------------
-        # Target Classes
-        # --------------------------------------
-
-        class_names = prediction.get(
-            "class_names",
-            []
-        )
-
-        if class_names:
-
-            content.append(Spacer(1, 12))
-
-            content.append(
-                Paragraph(
-                    "Target Classes",
-                    styles["Heading3"]
-                )
-            )
-
-            content.append(
-                Paragraph(
-                    ", ".join(
-                        map(str, class_names)
-                    ),
-                    styles["Normal"]
-                )
-            )
-
-                # --------------------------------------
-        # Confusion Matrix
-        # --------------------------------------
-
-        confusion_rows = prediction.get(
-            "confusion_matrix_rows",
-            []
-        )
-
-        class_names = prediction.get(
-            "class_names",
-            []
-        )
-
-        if confusion_rows and class_names:
-
-            content.append(Spacer(1, 12))
-
-            content.append(
-                Paragraph(
-                    "Confusion Matrix",
-                    styles["Heading3"]
-                )
-            )
-
-            confusion_data = [
-                ["Actual / Predicted"]
-                + [str(name) for name in class_names]
+            regression_metrics = [
+                ["Metric", "Value"],
+                ["R² Score", f"{prediction.get('r2', 0):.3f}"],
+                ["Mean Absolute Error", f"{prediction.get('mae', 0):.3f}"],
+                ["Root Mean Squared Error", f"{prediction.get('rmse', 0):.3f}"],
+                ["5-Fold CV R²", f"{prediction.get('cv_score', 0):.3f}"]
             ]
 
-            for row in confusion_rows:
-
-                actual_class = row.get(
-                    "actual_class",
-                    ""
-                )
-
-                values = row.get(
-                    "values",
-                    []
-                )
-
-                confusion_data.append(
-                    [str(actual_class)]
-                    + [str(value) for value in values]
-                )
-
-            confusion_table = Table(
-                confusion_data,
-                repeatRows=1
+            regression_table = Table(
+                regression_metrics,
+                colWidths=[220, 120]
             )
 
-            confusion_table.setStyle(
+            regression_table.setStyle(
                 TableStyle([
-                    (
-                        "BACKGROUND",
-                        (0, 0),
-                        (-1, 0),
-                        colors.HexColor("#343a40")
-                    ),
-                    (
-                        "TEXTCOLOR",
-                        (0, 0),
-                        (-1, 0),
-                        colors.white
-                    ),
-                    (
-                        "FONTNAME",
-                        (0, 0),
-                        (-1, 0),
-                        "Helvetica-Bold"
-                    ),
-                    (
-                        "FONTNAME",
-                        (0, 1),
-                        (0, -1),
-                        "Helvetica-Bold"
-                    ),
-                    (
-                        "GRID",
-                        (0, 0),
-                        (-1, -1),
-                        0.5,
-                        colors.grey
-                    ),
-                    (
-                        "ALIGN",
-                        (0, 0),
-                        (-1, -1),
-                        "CENTER"
-                    ),
-                    (
-                        "VALIGN",
-                        (0, 0),
-                        (-1, -1),
-                        "MIDDLE"
-                    ),
-                    (
-                        "PADDING",
-                        (0, 0),
-                        (-1, -1),
-                        6
-                    )
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#198754")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                    ("PADDING", (0, 0), (-1, -1), 6)
                 ])
             )
 
-            content.append(
-                confusion_table
-            )
+            content.append(Spacer(1, 12))
+            content.append(regression_table)
 
-               # --------------------------------------
-        # Classification Report
+        # --------------------------------------
+        # Classification
         # --------------------------------------
 
-        classification_report_data = prediction.get(
-            "classification_report",
-            []
-        )
-
-        if classification_report_data:
+        elif prediction.get("task_type") == "classification":
 
             content.append(Spacer(1, 12))
 
             content.append(
                 Paragraph(
-                    "Classification Report",
+                    "Classification Performance",
                     styles["Heading3"]
                 )
             )
 
-            report_data = [
-                [
+            performance_data = [
+                ["Metric", "Value"],
+                ["Accuracy", f"{prediction.get('accuracy', 0) * 100:.2f}%"],
+                ["Precision", f"{prediction.get('precision', 0):.3f}"],
+                ["Recall", f"{prediction.get('recall', 0):.3f}"],
+                ["F1 Score", f"{prediction.get('f1', 0):.3f}"],
+                ["5-Fold CV Accuracy", f"{prediction.get('cv_score', 0) * 100:.2f}%"]
+            ]
+
+            auc_score = prediction.get("auc_score")
+
+            if auc_score is not None:
+                performance_data.append([
+                    "ROC AUC Score",
+                    f"{auc_score:.3f}"
+                ])
+
+            performance_table = Table(
+                performance_data,
+                colWidths=[220, 120]
+            )
+
+            performance_table.setStyle(
+                TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0d6efd")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                    ("PADDING", (0, 0), (-1, -1), 6)
+                ])
+            )
+
+            content.append(performance_table)
+
+            # --------------------------------------
+            # Target Classes
+            # --------------------------------------
+
+            class_names = prediction.get("class_names", [])
+
+            if class_names:
+
+                content.append(Spacer(1, 12))
+
+                content.append(
+                    Paragraph(
+                        "Target Classes",
+                        styles["Heading3"]
+                    )
+                )
+
+                content.append(
+                    Paragraph(
+                        ", ".join(map(str, class_names)),
+                        styles["Normal"]
+                    )
+                )
+
+            # --------------------------------------
+            # Confusion Matrix
+            # --------------------------------------
+
+            confusion_rows = prediction.get(
+                "confusion_matrix_rows",
+                []
+            )
+
+            if confusion_rows and class_names:
+
+                content.append(Spacer(1, 12))
+
+                content.append(
+                    Paragraph(
+                        "Confusion Matrix",
+                        styles["Heading3"]
+                    )
+                )
+
+                confusion_data = [
+                    ["Actual / Predicted"]
+                    + [str(name) for name in class_names]
+                ]
+
+                for row in confusion_rows:
+
+                    actual_class = row.get("actual_class", "")
+                    values = row.get("values", [])
+
+                    confusion_data.append(
+                        [str(actual_class)]
+                        + [str(value) for value in values]
+                    )
+
+                confusion_table = Table(
+                    confusion_data,
+                    repeatRows=1
+                )
+
+                confusion_table.setStyle(
+                    TableStyle([
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#343a40")),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("PADDING", (0, 0), (-1, -1), 6)
+                    ])
+                )
+
+                content.append(confusion_table)
+
+            # --------------------------------------
+            # Classification Report
+            # --------------------------------------
+
+            classification_report_data = prediction.get(
+                "classification_report",
+                {}
+            )
+
+            if classification_report_data:
+
+                content.append(Spacer(1, 12))
+
+                content.append(
+                    Paragraph(
+                        "Classification Report",
+                        styles["Heading3"]
+                    )
+                )
+
+                report_data = [[
                     "Class",
                     "Precision",
                     "Recall",
                     "F1 Score",
                     "Support"
-                ]
-            ]
+                ]]
 
-            # ----------------------------------
-            # If report is a dictionary
-            # ----------------------------------
+                if isinstance(classification_report_data, dict):
 
-            if isinstance(
-                classification_report_data,
-                dict
-            ):
+                    for class_name, metrics in classification_report_data.items():
 
-                for class_name, metrics in (
-                    classification_report_data.items()
-                ):
+                        if not isinstance(metrics, dict):
+                            continue
 
-                    # Skip summary values
-                    if not isinstance(metrics, dict):
-                        continue
+                        if class_name in [
+                            "accuracy",
+                            "macro avg",
+                            "weighted avg"
+                        ]:
+                            continue
 
-                    # Skip overall summary rows
-                    if class_name in [
-                        "accuracy",
-                        "macro avg",
-                        "weighted avg"
-                    ]:
-                        continue
+                        report_data.append([
+                            str(class_name),
+                            f"{metrics.get('precision', 0):.3f}",
+                            f"{metrics.get('recall', 0):.3f}",
+                            f"{metrics.get('f1-score', 0):.3f}",
+                            str(int(metrics.get('support', 0)))
+                        ])
 
-                    report_data.append([
-                        str(class_name),
+                elif isinstance(classification_report_data, list):
 
-                        f"{metrics.get('precision', 0):.3f}",
+                    for row in classification_report_data:
 
-                        f"{metrics.get('recall', 0):.3f}",
-
-                        f"{metrics.get('f1-score', 0):.3f}",
-
-                        str(
-                            int(
-                                metrics.get(
-                                    "support",
-                                    0
-                                )
-                            )
-                        )
-                    ])
-
-            # ----------------------------------
-            # If report is a list
-            # ----------------------------------
-
-            elif isinstance(
-                classification_report_data,
-                list
-            ):
-
-                for row in classification_report_data:
-
-                    # Dictionary row
-                    if isinstance(row, dict):
+                        if not isinstance(row, dict):
+                            continue
 
                         class_name = row.get(
                             "class",
-                            row.get(
-                                "label",
-                                ""
-                            )
+                            row.get("label", "")
                         )
 
-                        precision = row.get(
-                            "precision",
-                            0
-                        )
-
-                        recall = row.get(
-                            "recall",
-                            0
-                        )
-
+                        precision = row.get("precision", 0)
+                        recall = row.get("recall", 0)
                         f1 = row.get(
                             "f1_score",
-                            row.get(
-                                "f1-score",
-                                0
-                            )
+                            row.get("f1-score", 0)
                         )
-
-                        support = row.get(
-                            "support",
-                            0
-                        )
+                        support = row.get("support", 0)
 
                         report_data.append([
                             str(class_name),
@@ -1561,180 +1187,124 @@ def download_pdf():
                             str(int(support))
                         ])
 
-            # ----------------------------------
-            # Create table only if data exists
-            # ----------------------------------
+                if len(report_data) > 1:
 
-            if len(report_data) > 1:
+                    report_table = Table(
+                        report_data,
+                        colWidths=[90, 75, 75, 75, 65]
+                    )
 
-                report_table = Table(
-                    report_data,
-                    colWidths=[
-                        90,
-                        75,
-                        75,
-                        75,
-                        65
-                    ]
-                )
+                    report_table.setStyle(
+                        TableStyle([
+                            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#198754")),
+                            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                            ("ALIGN", (1, 1), (-1, -1), "CENTER"),
+                            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                            ("PADDING", (0, 0), (-1, -1), 5)
+                        ])
+                    )
 
-                report_table.setStyle(
-                    TableStyle([
-                        (
-                            "BACKGROUND",
-                            (0, 0),
-                            (-1, 0),
-                            colors.HexColor("#198754")
-                        ),
-                        (
-                            "TEXTCOLOR",
-                            (0, 0),
-                            (-1, 0),
-                            colors.white
-                        ),
-                        (
-                            "FONTNAME",
-                            (0, 0),
-                            (-1, 0),
-                            "Helvetica-Bold"
-                        ),
-                        (
-                            "GRID",
-                            (0, 0),
-                            (-1, -1),
-                            0.5,
-                            colors.grey
-                        ),
-                        (
-                            "ALIGN",
-                            (1, 1),
-                            (-1, -1),
-                            "CENTER"
-                        ),
-                        (
-                            "VALIGN",
-                            (0, 0),
-                            (-1, -1),
-                            "MIDDLE"
-                        ),
-                        (
-                            "PADDING",
-                            (0, 0),
-                            (-1, -1),
-                            5
-                        )
-                    ])
-                )
+                    content.append(report_table)
 
-                content.append(
-                    report_table
-                )
+            # --------------------------------------
+            # ROC Curve
+            # --------------------------------------
 
-                        # --------------------------------------
-        # ROC Curve
-        # --------------------------------------
+            roc_image = prediction.get("roc_image")
+            roc_message = prediction.get("roc_message")
 
-        roc_image = prediction.get(
-            "roc_image"
-        )
+            if roc_image:
 
-        auc_score = prediction.get(
-            "auc_score"
-        )
-
-        roc_message = prediction.get(
-            "roc_message"
-        )
-
-        if roc_image:
-
-            content.append(Spacer(1, 12))
-
-            content.append(
-                Paragraph(
-                    "ROC Curve",
-                    styles["Heading3"]
-                )
-            )
-
-            if auc_score is not None:
+                content.append(Spacer(1, 12))
 
                 content.append(
                     Paragraph(
-                        f"<b>ROC AUC Score:</b> "
-                        f"{auc_score:.3f}",
-                        styles["Normal"]
+                        "ROC Curve",
+                        styles["Heading3"]
+                    )
+                )
+
+                if auc_score is not None:
+
+                    content.append(
+                        Paragraph(
+                            f"<b>ROC AUC Score:</b> {auc_score:.3f}",
+                            styles["Normal"]
+                        )
+                    )
+
+                image_bytes = base64.b64decode(roc_image)
+                roc_buffer = BytesIO(image_bytes)
+
+                roc_pdf_image = Image(
+                    roc_buffer,
+                    width=14 * cm,
+                    height=9 * cm
+                )
+
+                content.append(roc_pdf_image)
+
+            elif roc_message:
+
+                content.append(Spacer(1, 12))
+
+                content.append(
+                    Paragraph(
+                        "ROC Curve",
+                        styles["Heading3"]
                     )
                 )
 
                 content.append(
-                    Spacer(1, 8)
+                    Paragraph(
+                        str(roc_message),
+                        styles["Normal"]
+                    )
                 )
 
-            
+        # --------------------------------------
+        # Model Interpretation
+        # --------------------------------------
 
-            image_bytes = base64.b64decode(
-                roc_image
-            )
+        interpretation = prediction.get(
+            "interpretation",
+            ""
+        )
 
-            roc_buffer = BytesIO(
-                image_bytes
-            )
-
-            roc_pdf_image = Image(
-                roc_buffer,
-                width=14 * cm,
-                height=9 * cm
-            )
-
-            content.append(
-                roc_pdf_image
-            )
-
-        elif roc_message:
+        if interpretation:
 
             content.append(Spacer(1, 12))
 
             content.append(
                 Paragraph(
-                    "ROC Curve",
+                    "Model Interpretation",
                     styles["Heading3"]
                 )
             )
 
             content.append(
                 Paragraph(
-                    roc_message,
+                    str(interpretation),
                     styles["Normal"]
                 )
             )
-    # --------------------------------------
-    # Model Interpretation
-    # --------------------------------------
 
-    content.append(Spacer(1, 12))
+    else:
 
-    content.append(
-        Paragraph(
-            "Model Interpretation",
-            styles["Heading3"]
+        content.append(
+            Paragraph(
+                "Predictive analysis has not been performed yet.",
+                styles["Normal"]
+            )
         )
-    )
-
-    content.append(
-        Paragraph(
-            prediction["interpretation"],
-            styles["Normal"]
-        )
-    )
 
     # -----------------------------------------------------
     # Build PDF
     # -----------------------------------------------------
 
-    pdf.build(
-        content
-    )
+    pdf.build(content)
 
     output.seek(0)
 
