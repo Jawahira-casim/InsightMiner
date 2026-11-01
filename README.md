@@ -105,3 +105,47 @@ Master of Information Technology (MIT)
 ## License
 
 This project is available for educational and portfolio demonstration purposes.
+
+## Application Screenshots
+
+### Home Page
+![Home](screenshots/Home.png)
+
+### Login
+![Login](screenshots/Login.png)
+
+### Registration
+![Register](screenshots/Register.png)
+
+### Dashboard
+![Dashboard](screenshots/Dashboard.png)
+
+### Dataset Upload
+![Dataset Upload](screenshots/Dataset%20Upload.png)
+
+### Data Cleaning
+![Data Cleaning](screenshots/Data%20Cleaning.png)
+
+### Generate Charts
+![Generate Chart](screenshots/Generate%20Chart.png)
+
+### AI Insights
+![AI Insights](screenshots/Generate%20AI%20Insights.png)
+
+### Predictive Analysis
+![Predictive Analysis](screenshots/Predictive%20analysis.png)
+
+### Reports
+![Reports](screenshots/Reports.png)
+
+### Activity Log
+![Activity Log](screenshots/Activity%20Log.png)
+
+### Notifications
+![Notifications](screenshots/Notification.png)
+
+### Database Backup
+![Backup](screenshots/Backup.png)
+
+### User Profile
+![User Profile](screenshots/User%20Profile%20%26%20Logout.png)
