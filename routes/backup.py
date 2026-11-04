@@ -1,16 +1,33 @@
+
 import zipfile
-from flask import Blueprint, render_template, send_file, session, redirect, url_for
+import os
+from io import BytesIO
+from datetime import datetime
+
+from flask import (
+    Blueprint,
+    render_template,
+    send_file,
+    session,
+    redirect,
+    url_for,
+    abort
+)
+
 from decorators import role_required
 from activity import log_activity
 from notification_helper import add_notification
-import os
-import shutil
-from datetime import datetime
 from db import get_connection
+
+
 backup_bp = Blueprint('backup', __name__)
 
 BACKUP_FOLDER = "backups"
 
+
+# -----------------------------------------
+# BACKUP PAGE
+# -----------------------------------------
 
 @backup_bp.route('/backup')
 @role_required('Admin')
@@ -18,124 +35,263 @@ def backup_page():
 
     files = []
 
+    # Vercel does not permanently store local files.
+    # This folder is only used if it exists and is writable.
     if os.path.exists(BACKUP_FOLDER):
-        for file in os.listdir(BACKUP_FOLDER):
-            filepath = os.path.join(BACKUP_FOLDER, file)
-            files.append({
-                "name": file,
-                "size": round(os.path.getsize(filepath) / 1024, 2),
-                "date": datetime.fromtimestamp(os.path.getctime(filepath))
-            })
 
-    return render_template("backup.html", files=files)
+        for filename in os.listdir(BACKUP_FOLDER):
+
+            filepath = os.path.join(BACKUP_FOLDER, filename)
+
+            if os.path.isfile(filepath):
+
+                files.append({
+                    "name": filename,
+                    "size": round(
+                        os.path.getsize(filepath) / 1024, 2
+                    ),
+                    "date": datetime.fromtimestamp(
+                        os.path.getctime(filepath)
+                    )
+                })
+
+    return render_template(
+        "backup.html",
+        files=files
+    )
 
 
+# -----------------------------------------
+# CREATE BACKUP
+# -----------------------------------------
 
 @backup_bp.route('/create_backup')
 @role_required('Admin')
 def create_backup():
 
-    if not os.path.exists(BACKUP_FOLDER):
-        os.makedirs(BACKUP_FOLDER)
+    username = session.get('username')
 
-    backup_name = "insightminer_backup_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".zip"
-    backup_path = os.path.join(BACKUP_FOLDER, backup_name)
+    if not username:
+        abort(403)
 
-    with zipfile.ZipFile(backup_path, "w", zipfile.ZIP_DEFLATED) as backup:
+    created_at = datetime.now()
 
-        # Backup uploaded datasets
-        if os.path.exists("uploads"):
-            for foldername, subfolders, filenames in os.walk("uploads"):
-                for filename in filenames:
-                    filepath = os.path.join(foldername, filename)
-                    backup.write(filepath)
+    backup_name = (
+        "insightminer_backup_"
+        + created_at.strftime("%Y%m%d_%H%M%S")
+        + ".zip"
+    )
 
-        # Backup reports
-        if os.path.exists("reports"):
-            for foldername, subfolders, filenames in os.walk("reports"):
-                for filename in filenames:
-                    filepath = os.path.join(foldername, filename)
-                    backup.write(filepath)
+    # Create ZIP file in memory
+    backup_buffer = BytesIO()
 
-        # Create backup information file
+    with zipfile.ZipFile(
+        backup_buffer,
+        "w",
+        zipfile.ZIP_DEFLATED
+    ) as backup:
+
+        # Include available uploaded datasets and reports
+        for folder in ["uploads", "reports"]:
+
+            if os.path.isdir(folder):
+
+                for foldername, subfolders, filenames in os.walk(folder):
+
+                    for filename in filenames:
+
+                        filepath = os.path.join(
+                            foldername,
+                            filename
+                        )
+
+                        if os.path.isfile(filepath):
+
+                            backup.write(
+                                filepath,
+                                arcname=filepath
+                            )
+
+        # Add backup information
         info = f"""
 InsightMiner System Backup
 
-Created By : {session['username']}
-Backup Date : {datetime.now()}
+Created By: {username}
+
+Backup Date: {created_at}
 
 Backup completed successfully.
+
+Included folders:
+- uploads (if available)
+- reports (if available)
+
+Note:
+This backup contains files available in the
+server filesystem at the time of backup.
+
+It does not contain a complete MySQL database dump.
 """
 
-        backup.writestr("backup_info.txt", info)
+        backup.writestr(
+            "backup_info.txt",
+            info
+        )
 
-    # Get file size in KB
-    file_size = round(os.path.getsize(backup_path) / 1024, 2)
+    # Calculate backup size
+    backup_buffer.seek(0)
 
-    # Save backup details into MySQL
-    conn = get_connection()
-    cursor = conn.cursor()
+    file_size = round(
+        len(backup_buffer.getvalue()) / 1024,
+        2
+    )
 
-    sql = """
-    INSERT INTO backup_history
-    (backup_name, file_size, created_by)
-    VALUES (%s, %s, %s)
-    """
+    # Save backup history in MySQL
+    conn = None
+    cursor = None
 
-    cursor.execute(sql, (
-    backup_name,
-    file_size,
-    session['username']
-))
-    conn.commit()
-    cursor.close()
-    conn.close()
+    try:
 
-    log_activity(session['username'], "Created system backup")
-    add_notification(session['username'], "System backup created successfully.")
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    return send_file(backup_path, as_attachment=True)
+        sql = """
+        INSERT INTO backup_history
+        (backup_name, file_size, created_by)
+        VALUES (%s, %s, %s)
+        """
+
+        cursor.execute(
+            sql,
+            (
+                backup_name,
+                file_size,
+                username
+            )
+        )
+
+        conn.commit()
+
+    except Exception:
+
+        if conn:
+            conn.rollback()
+
+        raise
+
+    finally:
+
+        if cursor:
+            cursor.close()
+
+        if conn:
+            conn.close()
+
+    # Record activity
+    log_activity(
+        username,
+        "Created system backup"
+    )
+
+    # Send notification
+    add_notification(
+        username,
+        "System backup created successfully."
+    )
+
+    # Download ZIP directly from memory
+    backup_buffer.seek(0)
+
+    return send_file(
+        backup_buffer,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=backup_name
+    )
+
+
+# -----------------------------------------
+# DELETE BACKUP
+# -----------------------------------------
 
 @backup_bp.route('/delete_backup/<filename>')
 @role_required('Admin')
 def delete_backup(filename):
 
-    backup_path = os.path.join(BACKUP_FOLDER, filename)
+    # Prevent directory traversal
+    if (
+        os.path.basename(filename) != filename
+        or not filename.endswith(".zip")
+    ):
+        abort(400)
 
-    if os.path.exists(backup_path):
+    backup_path = os.path.join(
+        BACKUP_FOLDER,
+        filename
+    )
+
+    if os.path.isfile(backup_path):
+
         os.remove(backup_path)
 
-        if session.get('username'):
-            log_activity(session['username'], f"Deleted backup: {filename}")
+        username = session.get('username')
+
+        if username:
+
+            log_activity(
+                username,
+                f"Deleted backup: {filename}"
+            )
 
             add_notification(
-                session['username'],
+                username,
                 f"Deleted backup '{filename}'."
             )
 
-    return redirect(url_for('backup.backup_page'))
+    return redirect(
+        url_for('backup.backup_page')
+    )
+
+
+# -----------------------------------------
+# DOWNLOAD EXISTING BACKUP
+# -----------------------------------------
 
 @backup_bp.route('/download_backup/<filename>')
 @role_required('Admin')
 def download_backup(filename):
 
-    backup_path = os.path.join(BACKUP_FOLDER, filename)
+    # Prevent directory traversal
+    if (
+        os.path.basename(filename) != filename
+        or not filename.endswith(".zip")
+    ):
+        abort(400)
 
-    if os.path.exists(backup_path):
+    backup_path = os.path.join(
+        BACKUP_FOLDER,
+        filename
+    )
+
+    if os.path.isfile(backup_path):
+
+        username = session.get('username')
 
         log_activity(
-            session['username'],
+            username,
             f"Downloaded backup: {filename}"
         )
 
         add_notification(
-            session['username'],
+            username,
             f"Downloaded backup '{filename}'."
         )
 
         return send_file(
             backup_path,
-            as_attachment=True
+            mimetype="application/zip",
+            as_attachment=True,
+            download_name=filename
         )
 
     return "Backup file not found.", 404
