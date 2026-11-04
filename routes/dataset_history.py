@@ -1,12 +1,17 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_file
+
+from flask import Blueprint, render_template, request, send_file
 from db import get_connection
-from activity import log_activity
-from notification_helper import add_notification
 import pandas as pd
+
+from io import BytesIO
+
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, A4
+
 
 dataset_history_bp = Blueprint('dataset_history', __name__)
+
 
 @dataset_history_bp.route('/dataset_history')
 def dataset_history():
@@ -19,40 +24,44 @@ def dataset_history():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    sql = """
-        SELECT *
-        FROM datasets
-        WHERE 1=1
-    """
+    try:
+        sql = """
+            SELECT *
+            FROM datasets
+            WHERE 1=1
+        """
 
-    params = []
+        params = []
 
-    if search:
-        sql += " AND filename LIKE %s"
-        params.append(f"%{search}%")
+        if search:
+            sql += " AND filename LIKE %s"
+            params.append(f"%{search}%")
 
-    if category:
-        sql += " AND category = %s"
-        params.append(category)
+        if category:
+            sql += " AND category = %s"
+            params.append(category)
 
-    if uploaded_by:
-        sql += " AND uploaded_by LIKE %s"
-        params.append(f"%{uploaded_by}%")
+        if uploaded_by:
+            sql += " AND uploaded_by LIKE %s"
+            params.append(f"%{uploaded_by}%")
 
-    if date:
-        sql += " AND DATE(upload_date) = %s"
-        params.append(date)
+        if date:
+            sql += " AND DATE(upload_date) = %s"
+            params.append(date)
 
-    sql += " ORDER BY upload_date DESC"
+        sql += " ORDER BY upload_date DESC"
 
-    cursor.execute(sql, params)
-    datasets = cursor.fetchall()
+        cursor.execute(sql, params)
+        datasets = cursor.fetchall()
 
-    cursor.execute("SELECT DISTINCT category FROM datasets WHERE category IS NOT NULL")
-    categories = cursor.fetchall()
+        cursor.execute(
+            "SELECT DISTINCT category FROM datasets WHERE category IS NOT NULL"
+        )
+        categories = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+    finally:
+        cursor.close()
+        conn.close()
 
     return render_template(
         "dataset_history.html",
@@ -63,59 +72,86 @@ def dataset_history():
         date=date,
         categories=categories
     )
+
+
+# EXPORT DATASET HISTORY TO EXCEL
 @dataset_history_bp.route('/datasets_excel')
 def datasets_excel():
 
     conn = get_connection()
 
-    query = """
-    SELECT
-        filename,
-        category,
-        description,
-        uploaded_by,
-        rows_count,
-        columns_count,
-        upload_date
-    FROM datasets
-    ORDER BY upload_date DESC
-    """
+    try:
+        query = """
+            SELECT
+                filename,
+                category,
+                description,
+                uploaded_by,
+                rows_count,
+                columns_count,
+                upload_date
+            FROM datasets
+            ORDER BY upload_date DESC
+        """
 
-    df = pd.read_sql(query, conn)
-    conn.close()
+        df = pd.read_sql(query, conn)
 
-    file_path = "static/dataset_history.xlsx"
-    df.to_excel(file_path, index=False)
+    finally:
+        conn.close()
 
-    return send_file(file_path, as_attachment=True)
+    # Generate Excel file in memory
+    excel_buffer = BytesIO()
 
+    df.to_excel(
+        excel_buffer,
+        index=False,
+        engine="openpyxl"
+    )
+
+    excel_buffer.seek(0)
+
+    return send_file(
+        excel_buffer,
+        as_attachment=True,
+        download_name="dataset_history.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+# EXPORT DATASET HISTORY TO PDF
 @dataset_history_bp.route('/datasets_pdf')
 def datasets_pdf():
 
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-    SELECT
-        filename,
-        category,
-        description,
-        uploaded_by,
-        rows_count,
-        columns_count,
-        upload_date
-    FROM datasets
-    ORDER BY upload_date DESC
-    """)
+    try:
+        cursor.execute("""
+            SELECT
+                filename,
+                category,
+                description,
+                uploaded_by,
+                rows_count,
+                columns_count,
+                upload_date
+            FROM datasets
+            ORDER BY upload_date DESC
+        """)
 
-    rows = cursor.fetchall()
+        rows = cursor.fetchall()
 
-    cursor.close()
-    conn.close()
+    finally:
+        cursor.close()
+        conn.close()
 
-    pdf_path = "static/dataset_history.pdf"
+    # Generate PDF file in memory
+    pdf_buffer = BytesIO()
 
-    doc = SimpleDocTemplate(pdf_path)
+    doc = SimpleDocTemplate(
+        pdf_buffer,
+        pagesize=landscape(A4)
+    )
 
     data = [[
         "Filename",
@@ -127,19 +163,33 @@ def datasets_pdf():
         "Upload Date"
     ]]
 
-    for r in rows:
-        data.append(list(r))
+    for row in rows:
+        data.append([
+            str(value) if value is not None else ""
+            for value in row
+        ])
 
-    table = Table(data)
+    table = Table(
+        data,
+        repeatRows=1
+    )
 
     table.setStyle(TableStyle([
-        ('BACKGROUND',(0,0),(-1,0),colors.grey),
-        ('TEXTCOLOR',(0,0),(-1,0),colors.white),
-        ('GRID',(0,0),(-1,-1),1,colors.black),
-        ('BACKGROUND',(0,1),(-1,-1),colors.beige),
-        ('FONTSIZE',(0,0),(-1,-1),8),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
     ]))
 
     doc.build([table])
 
-    return send_file(pdf_path, as_attachment=True)
+    pdf_buffer.seek(0)
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name="dataset_history.pdf",
+        mimetype="application/pdf"
+    )
