@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -36,7 +37,8 @@
         </div>
         <div class="card-body">
             {% for col in df.columns %}
-                <a href="/column_info/{{ col }}" class="badge bg-primary text-decoration-none m-1">
+                <a href="/column_info/{{ col }}"
+                   class="badge bg-primary text-decoration-none m-1">
                     {{ col }}
                 </a>
             {% endfor %}
@@ -66,7 +68,11 @@
             <h4>Correlation Matrix</h4>
         </div>
         <div class="card-body table-responsive">
-            {{ correlation.to_html(classes='table table-bordered table-striped') | safe }}
+            {% if not correlation.empty %}
+                {{ correlation.to_html(classes='table table-bordered table-striped') | safe }}
+            {% else %}
+                <p>No numeric columns available for correlation analysis.</p>
+            {% endif %}
         </div>
     </div>
 
@@ -74,9 +80,23 @@
         <div class="card-header bg-primary text-white">
             <h4>Visualizations</h4>
         </div>
+
         <div class="card-body text-center">
-            <img src="/static/heatmap.png" class="img-fluid rounded shadow mb-4">
-            <img src="/static/chart.png" class="img-fluid rounded shadow">
+
+            {% if heatmap_img %}
+                <h5>Correlation Heatmap</h5>
+                <img src="{{ heatmap_img }}" class="img-fluid rounded shadow mb-4">
+            {% endif %}
+
+            {% if chart_img %}
+                <h5>Data Distribution</h5>
+                <img src="{{ chart_img }}" class="img-fluid rounded shadow">
+            {% endif %}
+
+            {% if not heatmap_img and not chart_img %}
+                <p>No numeric data available for visualizations.</p>
+            {% endif %}
+
         </div>
     </div>
 

@@ -1,52 +1,67 @@
+
 import os
 import pandas as pd
 import shared
 
+from werkzeug.utils import secure_filename
 from db import get_connection
 
 
 def process_dataset(file, category="General", description="", uploaded_by=None):
 
-    filepath = os.path.join("uploads", file.filename)
-    file.save(filepath)
+    filename = secure_filename(file.filename or "")
+    extension = os.path.splitext(filename)[1].lower()
 
-    if file.filename.endswith(".csv"):
-        df = pd.read_csv(filepath)
+    try:
+        # Read the uploaded file directly without saving it to disk
+        file.stream.seek(0)
 
-    elif file.filename.endswith(".xlsx"):
-        df = pd.read_excel(filepath)
+        if extension == ".csv":
+            df = pd.read_csv(file.stream)
 
-    else:
-        return None, "Unsupported file format."
+        elif extension == ".xlsx":
+            df = pd.read_excel(file.stream)
 
-    shared.current_df = df
+        else:
+            return None, "Unsupported file format. Please upload CSV or XLSX."
 
-    rows = df.shape[0]
-    columns = df.shape[1]
+        # Store the processed dataset for the application
+        shared.current_df = df
 
-    conn = get_connection()
-    cursor = conn.cursor()
+        rows = df.shape[0]
+        columns = df.shape[1]
 
-    sql = """
-    INSERT INTO datasets
-    (filename, rows_count, columns_count, category, description, uploaded_by)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """
+        conn = get_connection()
 
-    cursor.execute(
-        sql,
-        (
-            file.filename,
-            rows,
-            columns,
-            category,
-            description,
-            uploaded_by
-        )
-    )
+        try:
+            cursor = conn.cursor()
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+            sql = """
+            INSERT INTO datasets
+            (filename, rows_count, columns_count, category, description, uploaded_by)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """
 
-    return df, None
+            cursor.execute(
+                sql,
+                (
+                    filename,
+                    rows,
+                    columns,
+                    category,
+                    description,
+                    uploaded_by
+                )
+            )
+
+            conn.commit()
+
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+
+        return df, None
+
+    except Exception as e:
+        return None, f"Dataset processing failed: {str(e)}"
