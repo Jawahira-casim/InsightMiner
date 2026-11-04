@@ -1,4 +1,4 @@
-
+from io import StringIO
 from flask import Blueprint, render_template, session
 import pandas as pd
 import shared
@@ -36,10 +36,9 @@ def clean_data():
             return "No dataset uploaded."
 
         df = pd.read_json(
-            result["data_json"],
-            orient="split"
-        )
-
+    StringIO(result["data_json"]),
+    orient="split"
+)
         # Before cleaning
         rows_before = df.shape[0]
         missing_before = df.isnull().sum().sum()
