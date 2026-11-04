@@ -1,6 +1,10 @@
-from flask import Blueprint, render_template
+
+from flask import Blueprint, render_template, session
 import pandas as pd
 import shared
+import json
+
+from db import get_connection
 
 cleaning_bp = Blueprint('cleaning', __name__)
 
@@ -8,36 +12,90 @@ cleaning_bp = Blueprint('cleaning', __name__)
 @cleaning_bp.route('/clean_data')
 def clean_data():
 
-    if shared.current_df is None:
-        return "No dataset uploaded."
+    username = session.get("username")
 
-    # Before cleaning
-    rows_before = shared.current_df.shape[0]
-    missing_before = shared.current_df.isnull().sum().sum()
+    if not username:
+        return "Please log in first.", 401
 
-    # Remove duplicate rows
-    shared.current_df.drop_duplicates(inplace=True)
+    conn = get_connection()
 
-    # Fill missing values
-    for column in shared.current_df.columns:
+    try:
+        cursor = conn.cursor(dictionary=True)
 
-        if pd.api.types.is_numeric_dtype(shared.current_df[column]):
-            shared.current_df[column] = shared.current_df[column].fillna(
-                shared.current_df[column].mean()
-            )
-        else:
-            shared.current_df[column] = shared.current_df[column].fillna("Unknown")
+        cursor.execute("""
+            SELECT data_json
+            FROM insightminer_uploaded_data
+            WHERE uploaded_by = %s
+            ORDER BY id DESC
+            LIMIT 1
+        """, (username,))
 
-    # After cleaning
-    rows_after = shared.current_df.shape[0]
-    missing_after = shared.current_df.isnull().sum().sum()
-    duplicates_removed = rows_before - rows_after
+        result = cursor.fetchone()
 
-    return render_template(
-        "clean_data.html",
-        before_rows=rows_before,
-        after_rows=rows_after,
-        duplicates_removed=duplicates_removed,
-        missing_before=missing_before,
-        missing_after=missing_after
-    )
+        if not result:
+            return "No dataset uploaded."
+
+        df = pd.read_json(
+            result["data_json"],
+            orient="split"
+        )
+
+        # Before cleaning
+        rows_before = df.shape[0]
+        missing_before = df.isnull().sum().sum()
+
+        # Remove duplicate records
+        df = df.drop_duplicates()
+
+        # Fill missing values
+        for column in df.columns:
+
+            if pd.api.types.is_numeric_dtype(df[column]):
+                mean_value = df[column].mean()
+
+                if pd.notna(mean_value):
+                    df[column] = df[column].fillna(mean_value)
+
+            else:
+                df[column] = df[column].fillna("Unknown")
+
+        # After cleaning
+        rows_after = df.shape[0]
+        missing_after = df.isnull().sum().sum()
+
+        duplicates_removed = rows_before - rows_after
+
+        # Save cleaned dataset back to MySQL
+        cleaned_json = df.to_json(
+            orient="split",
+            date_format="iso"
+        )
+
+        cursor.execute("""
+            UPDATE insightminer_uploaded_data
+            SET data_json = %s
+            WHERE uploaded_by = %s
+            ORDER BY id DESC
+            LIMIT 1
+        """, (cleaned_json, username))
+
+        conn.commit()
+
+        shared.current_df = df
+
+        return render_template(
+            "clean_data.html",
+            before_rows=rows_before,
+            after_rows=rows_after,
+            duplicates_removed=duplicates_removed,
+            missing_before=missing_before,
+            missing_after=missing_after
+        )
+
+    except Exception as e:
+        conn.rollback()
+        return f"Dataset cleaning failed: {str(e)}", 500
+
+    finally:
+        cursor.close()
+        conn.close()
