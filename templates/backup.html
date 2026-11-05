@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% block content %}
 
@@ -21,9 +22,9 @@
                 <thead class="table-dark">
                     <tr>
                         <th>Backup File</th>
-<th>Size (KB)</th>
-<th>Created Date</th>
-<th width="220">Actions</th>
+                        <th>Size (KB)</th>
+                        <th>Created Date (Local Time)</th>
+                        <th width="220">Actions</th>
                     </tr>
                 </thead>
 
@@ -32,24 +33,27 @@
                     <tr>
                         <td>{{ file.name }}</td>
 
-<td>{{ file.size }}</td>
+                        <td>{{ file.size }}</td>
 
-<td>{{ file.date.strftime('%d-%m-%Y %I:%M %p') }}</td>
+                        <td>
+                            <span class="local-backup-time"
+                                  data-utc="{{ file.date_utc }}">
+                                Loading time...
+                            </span>
+                        </td>
 
-<td>
+                        <td>
+                            <a href="/download_backup/{{ file.name }}"
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-download"></i> Download
+                            </a>
 
-    <a href="/download_backup/{{ file.name }}"
-       class="btn btn-sm btn-primary">
-        <i class="bi bi-download"></i> Download
-    </a>
-
-    <a href="/delete_backup/{{ file.name }}"
-       class="btn btn-sm btn-danger"
-       onclick="return confirm('Delete this backup?');">
-        <i class="bi bi-trash"></i> Delete
-    </a>
-
-</td>
+                            <a href="/delete_backup/{{ file.name }}"
+                               class="btn btn-sm btn-danger"
+                               onclick="return confirm('Delete this backup?');">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
@@ -61,10 +65,48 @@
                 </tbody>
             </table>
 
+            <small class="text-muted">
+                Times are displayed according to your device's time zone.
+            </small>
+
         </div>
-
     </div>
-
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const timeElements = document.querySelectorAll(".local-backup-time");
+
+    timeElements.forEach(function (element) {
+
+        const utcTime = element.dataset.utc;
+
+        if (!utcTime) {
+            element.textContent = "Time unavailable";
+            return;
+        }
+
+        const date = new Date(utcTime);
+
+        if (isNaN(date.getTime())) {
+            element.textContent = "Invalid date";
+            return;
+        }
+
+        element.textContent = new Intl.DateTimeFormat(undefined, {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true
+        }).format(date);
+
+    });
+
+});
+</script>
 
 {% endblock %}

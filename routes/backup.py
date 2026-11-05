@@ -2,7 +2,7 @@
 import zipfile
 import os
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import (
     Blueprint,
@@ -54,10 +54,30 @@ def backup_page():
 
         for row in rows:
 
+            created_at = row["created_at"]
+
+            if created_at:
+                # Existing MySQL DATETIME values are interpreted as UTC.
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(
+                        tzinfo=timezone.utc
+                    )
+                else:
+                    created_at = created_at.astimezone(
+                        timezone.utc
+                    )
+
+                date_utc = created_at.isoformat(
+                    timespec="seconds"
+                ).replace("+00:00", "Z")
+
+            else:
+                date_utc = ""
+
             files.append({
                 "name": row["backup_name"],
                 "size": float(row["file_size"] or 0),
-                "date": row["created_at"]
+                "date_utc": date_utc
             })
 
     finally:
@@ -86,11 +106,12 @@ def create_backup():
     if not username:
         abort(403)
 
-    created_at = datetime.now()
+    # Always generate the timestamp in UTC.
+    created_at_utc = datetime.now(timezone.utc)
 
     backup_name = (
         "insightminer_backup_"
-        + created_at.strftime("%Y%m%d_%H%M%S")
+        + created_at_utc.strftime("%Y%m%d_%H%M%S")
         + ".zip"
     )
 
@@ -102,7 +123,7 @@ def create_backup():
         zipfile.ZIP_DEFLATED
     ) as backup:
 
-        # Include available uploaded files and reports
+        # Include available uploaded files and reports.
         for folder in ["uploads", "reports"]:
 
             if os.path.isdir(folder):
@@ -127,7 +148,7 @@ def create_backup():
 InsightMiner System Backup
 
 Created By: {username}
-Backup Date: {created_at}
+Backup Date (UTC): {created_at_utc.isoformat()}
 
 Backup completed successfully.
 
@@ -147,7 +168,6 @@ It does not contain a complete MySQL database dump.
             info
         )
 
-    # Read ZIP contents
     backup_buffer.seek(0)
     backup_data = backup_buffer.getvalue()
 
@@ -155,6 +175,10 @@ It does not contain a complete MySQL database dump.
         len(backup_data) / 1024,
         2
     )
+
+    # MySQL DATETIME stores a timezone-naive value.
+    # We explicitly save the UTC clock value.
+    created_at_db = created_at_utc.replace(tzinfo=None)
 
     conn = None
     cursor = None
@@ -166,8 +190,14 @@ It does not contain a complete MySQL database dump.
 
         sql = """
             INSERT INTO backup_history
-            (backup_name, file_size, created_by, backup_data)
-            VALUES (%s, %s, %s, %s)
+            (
+                backup_name,
+                file_size,
+                created_by,
+                backup_data,
+                created_at
+            )
+            VALUES (%s, %s, %s, %s, %s)
         """
 
         cursor.execute(
@@ -176,7 +206,8 @@ It does not contain a complete MySQL database dump.
                 backup_name,
                 file_size,
                 username,
-                backup_data
+                backup_data,
+                created_at_db
             )
         )
 
@@ -197,19 +228,16 @@ It does not contain a complete MySQL database dump.
         if conn:
             conn.close()
 
-    # Activity log
     log_activity(
         username,
         "Created system backup"
     )
 
-    # Notification
     add_notification(
         username,
         "System backup created successfully."
     )
 
-    # Download ZIP from memory
     return send_file(
         BytesIO(backup_data),
         mimetype="application/zip",
