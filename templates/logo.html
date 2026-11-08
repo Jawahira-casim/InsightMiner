@@ -16,6 +16,7 @@
                  class="img-thumbnail mb-4">
 
             <form method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="mb-3">
                     <label class="form-label">Select New Logo</label>

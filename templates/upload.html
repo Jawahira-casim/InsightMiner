@@ -7,6 +7,7 @@
         <p class="text-secondary mb-4">Select a CSV or Excel file to begin your analysis.</p>
         
         <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-4">
                 <input type="file" name="file" class="form-control form-control-lg">
             </div>

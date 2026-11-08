@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 
 from db import get_connection
 
@@ -36,6 +37,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 if not app.secret_key:
     raise RuntimeError("FLASK_SECRET_KEY is not configured.")
+csrf = CSRFProtect(app)
 
 # Register all Blueprints
 

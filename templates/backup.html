@@ -7,13 +7,13 @@
     <div class="card shadow-lg border-0">
 
         <div class="card-header bg-primary text-white">
-            <h3>ðŸ’¾ Backup Center</h3>
+            <h3>Backup Center</h3>
         </div>
 
         <div class="card-body">
 
             <a href="/create_backup" class="btn btn-success mb-4">
-                ðŸ’¾ Create Backup
+                 Create Backup
             </a>
 
 <hr class="my-4">
@@ -25,7 +25,7 @@
 <div class="alert alert-warning">
     <strong>Test mode:</strong>
     This restore feature currently targets the separate
-    insightminer_restore_test2 database only.
+    insightminer_restore_test3 database only.
 </div>
 
 
@@ -33,7 +33,7 @@
       method="POST"
       enctype="multipart/form-data"
       onsubmit="return confirm('Restore this backup into the isolated test database?');">
-
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <div class="mb-3">
 <label for="backup_file" class="form-label">

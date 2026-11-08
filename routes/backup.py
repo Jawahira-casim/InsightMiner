@@ -657,7 +657,7 @@ def delete_backup(filename):
 # AUTOMATIC BACKUP RESTORE - ISOLATED TEST DATABASE
 # ---------------------------------------------------------
 
-RESTORE_TEST_DATABASE = "insightminer_restore_test2"
+RESTORE_TEST_DATABASE = "insightminer_restore_test3"
 
 def get_restore_test_connection():
     """Connect only to the dedicated restore-test database."""
@@ -820,17 +820,22 @@ def restore_csv_table(backup_zip, connection, table_name):
 
     return restored_rows
 
+def get_restore_staging_folder():
+    """Return the isolated restore-test staging folder."""
 
+    project_root = os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))
+    )
+
+    return os.path.join(
+        project_root,
+        "instance",
+        "restore_test3_files"
+    )
 def restore_uploaded_files(backup_zip):
     """Copy uploaded files into an isolated staging folder."""
 
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    restore_folder = os.path.join(
-        project_root,
-        "instance",
-        "restore_test2_files"
-    )
+    restore_folder = get_restore_staging_folder()
 
     if os.path.exists(restore_folder):
         raise ValueError(
@@ -872,6 +877,8 @@ def restore_uploaded_files(backup_zip):
     return copied_files
 
 
+
+
 @backup_bp.route("/restore_backup", methods=["POST"])
 @role_required("Admin")
 def restore_backup():
@@ -884,24 +891,40 @@ def restore_backup():
 
     connection = None
     backup_zip = None
+    created_tables = []
 
     try:
 
+        # Validate ZIP archive
         if not zipfile.is_zipfile(uploaded_file.stream):
-            raise ValueError("The selected file is not a valid ZIP archive.")
+            raise ValueError(
+                "The selected file is not a valid ZIP archive."
+            )
 
         uploaded_file.stream.seek(0)
 
-        backup_zip = zipfile.ZipFile(uploaded_file.stream, "r")
+        backup_zip = zipfile.ZipFile(
+            uploaded_file.stream,
+            "r"
+        )
 
         validate_backup_zip(backup_zip)
 
+        # Check restore staging folder
+        restore_folder = get_restore_staging_folder()
+
+        if os.path.exists(restore_folder):
+            raise ValueError(
+                "The restore staging folder already exists. "
+                "Inspect it before running another restore."
+            )
+
+        # Connect only to the isolated restore-test database
         connection = get_restore_test_connection()
 
         cursor = connection.cursor()
 
         cursor.execute("SHOW TABLES")
-
         existing_tables = cursor.fetchall()
 
         cursor.close()
@@ -912,6 +935,7 @@ def restore_backup():
                 "No data was restored. Use a fresh empty test database."
             )
 
+        # Read database schema
         schema_sql = backup_zip.read(
             "database/database_schema.sql"
         ).decode("utf-8")
@@ -927,7 +951,7 @@ def restore_backup():
                 "The backup schema does not match the expected table list."
             )
 
-        # Extract only CREATE TABLE statements.
+        # Create database tables
         for table_name in BACKUP_TABLES:
 
             match = re.search(
@@ -943,10 +967,17 @@ def restore_backup():
                     f"Table definition missing: {table_name}"
                 )
 
-            connection.cursor().execute(match.group(0))
+            cursor = connection.cursor()
+
+            cursor.execute(match.group(0))
+
+            cursor.close()
+
+            created_tables.append(table_name)
 
         connection.commit()
 
+        # Restore CSV records
         restored_counts = {}
 
         for table_name in BACKUP_TABLES:
@@ -959,14 +990,19 @@ def restore_backup():
 
             connection.commit()
 
+        # Close database connection before copying files
         connection.close()
         connection = None
 
+        # Restore uploaded files into isolated staging folder
         copied_files = restore_uploaded_files(backup_zip)
+
+        # Restoration success message
+        total_rows = sum(restored_counts.values())
 
         flash(
             "Test restoration completed successfully. "
-            f"Restored {sum(restored_counts.values())} database rows "
+            f"Restored {total_rows} database rows "
             f"across {len(restored_counts)} tables and copied "
             f"{copied_files} files. "
             "The original database was not modified.",
@@ -982,7 +1018,42 @@ def restore_backup():
         print("RESTORE ERROR:", str(error))
 
         if connection and connection.is_connected():
-            connection.rollback()
+
+            try:
+                connection.rollback()
+
+            except Exception as rollback_error:
+                print("ROLLBACK ERROR:", str(rollback_error))
+
+            # Remove only tables created by this restore attempt
+            for table_name in reversed(created_tables):
+
+                try:
+
+                    cursor = connection.cursor()
+
+                    cursor.execute(
+                        f"DROP TABLE IF EXISTS `{table_name}`"
+                    )
+
+                    cursor.close()
+
+                except Exception as cleanup_error:
+
+                    print(
+                        f"TABLE CLEANUP ERROR ({table_name}):",
+                        str(cleanup_error)
+                    )
+
+            try:
+                connection.commit()
+
+            except Exception as cleanup_commit_error:
+
+                print(
+                    "CLEANUP COMMIT ERROR:",
+                    str(cleanup_commit_error)
+                )
 
         flash(
             "Restore failed: " + str(error),
