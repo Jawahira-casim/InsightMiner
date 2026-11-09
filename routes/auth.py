@@ -60,6 +60,9 @@ def login():
 
         if user and check_password_hash(user[2], password):
 
+            session.clear()
+            session.permanent = True
+
             session['logged_in'] = True
             session['username'] = username
             session['role'] = user[3]

@@ -37,8 +37,16 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
 if not app.secret_key:
     raise RuntimeError("FLASK_SECRET_KEY is not configured.")
-csrf = CSRFProtect(app)
 
+# Session and security settings
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.getenv("SESSION_COOKIE_SECURE", "False").lower() == "true",
+    PERMANENT_SESSION_LIFETIME=1800,
+)
+
+csrf = CSRFProtect(app)
 # Register all Blueprints
 
 app.register_blueprint(auth_bp)
