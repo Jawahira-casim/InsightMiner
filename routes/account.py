@@ -4,6 +4,8 @@ from activity import log_activity
 from flask import session
 account_bp = Blueprint('account', __name__)
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import current_app as app
+
 
 @account_bp.route('/change_password', methods=['GET', 'POST'])
 def change_password():
@@ -15,44 +17,82 @@ def change_password():
     status = None
 
     if request.method == 'POST':
-        old_password = request.form['old_password']
-        new_password = request.form['new_password']
-        confirm_password = request.form['confirm_password']
 
-        if new_password != confirm_password:
+        old_password = request.form.get('old_password', '')
+        new_password = request.form.get('new_password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not old_password or not new_password or not confirm_password:
+            message = "Please fill in all password fields."
+            status = "danger"
+
+        elif new_password != confirm_password:
             message = "New password and confirm password do not match."
             status = "danger"
-            return render_template("change_password.html", message=message, status=status)
 
-        conn = get_connection()
-        cursor = conn.cursor()
+        elif old_password == new_password:
+            message = "New password must be different from the current password."
+            status = "danger"
 
-        sql = "SELECT * FROM users WHERE username=%s AND password=%s"
-        hashed_password = generate_password_hash(new_password)
+        else:
+            conn = None
+            cursor = None
 
-        cursor.execute(update_sql, (hashed_password, session['username']))
-        user = cursor.fetchone()
+            try:
+                conn = get_connection()
+                cursor = conn.cursor()
 
-        if user:
-            update_sql = "UPDATE users SET password=%s WHERE username=%s"
-            cursor.execute(update_sql, (new_password, session['username']))
-            conn.commit()
+                cursor.execute(
+                    "SELECT password FROM users WHERE username=%s",
+                    (session['username'],)
+                )
 
-            cursor.close()
-            conn.close()
-            log_activity(session['username'], "Changed Password")
+                user = cursor.fetchone()
 
-            message = "Password changed successfully."
-            status = "success"
-            return render_template("change_password.html", message=message, status=status)
+                if user and check_password_hash(user[0], old_password):
 
-        cursor.close()
-        conn.close()
+                    hashed_password = generate_password_hash(new_password)
 
-        message = "Current password is incorrect."
-        status = "danger"
+                    cursor.execute(
+                        "UPDATE users SET password=%s WHERE username=%s",
+                        (hashed_password, session['username'])
+                    )
 
-    return render_template("change_password.html", message=message, status=status)
+                    conn.commit()
+
+                    log_activity(
+                        session['username'],
+                        "Changed Password"
+                    )
+
+                    message = "Password changed successfully."
+                    status = "success"
+
+                else:
+                    message = "Current password is incorrect."
+                    status = "danger"
+
+            except Exception:
+                if conn and conn.is_connected():
+                    conn.rollback()
+
+                app.logger.exception("Password change failed")
+
+                message = "Unable to change password. Please try again."
+                status = "danger"
+
+            finally:
+                if cursor:
+                    cursor.close()
+
+                if conn and conn.is_connected():
+                    conn.close()
+
+    return render_template(
+        "change_password.html",
+        message=message,
+        status=status
+    )
 
 @account_bp.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():

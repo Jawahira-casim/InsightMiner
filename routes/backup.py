@@ -657,7 +657,7 @@ def delete_backup(filename):
 # AUTOMATIC BACKUP RESTORE - ISOLATED TEST DATABASE
 # ---------------------------------------------------------
 
-RESTORE_TEST_DATABASE = "insightminer_restore_test3"
+RESTORE_TEST_DATABASE = "insightminer_restore_test4"
 
 def get_restore_test_connection():
     """Connect only to the dedicated restore-test database."""
@@ -830,7 +830,7 @@ def get_restore_staging_folder():
     return os.path.join(
         project_root,
         "instance",
-        "restore_test3_files"
+        "restore_test4_files"
     )
 def restore_uploaded_files(backup_zip):
     """Copy uploaded files into an isolated staging folder."""
