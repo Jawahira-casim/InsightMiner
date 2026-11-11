@@ -1,31 +1,43 @@
-from flask import Blueprint, render_template, send_file
+
+import os
+from io import BytesIO
+
+import matplotlib
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
+
+from flask import (
+    Blueprint,
+    render_template,
+    send_file,
+    session,
+    abort
+)
+
 import shared
 
-charts_bp = Blueprint('charts', __name__)
+
+charts_bp = Blueprint("charts", __name__)
 
 
-@charts_bp.route('/charts')
-def charts():
-    return render_template("charts.html")
+# =========================================================
+# Generate Chart Image in Memory
+# =========================================================
 
-
-@charts_bp.route('/generate_chart/<chart_type>')
-def generate_chart(chart_type):
+def create_chart_image(chart_type):
 
     if shared.current_df is None:
-        return "Please upload a dataset first."
+        return None
 
-    numeric = shared.current_df.select_dtypes(include='number')
+    numeric = shared.current_df.select_dtypes(include="number")
 
     if numeric.empty:
-        return "No numeric columns available."
+        return None
 
-    plt.figure(figsize=(10, 6))
+    plt.close("all")
 
-    # =========================
     # Histogram
-    # =========================
     if chart_type == "hist":
 
         numeric.hist(
@@ -35,98 +47,98 @@ def generate_chart(chart_type):
             linewidth=0.8
         )
 
-        plt.suptitle(
+        fig = plt.gcf()
+
+        fig.suptitle(
             "Histogram Analysis",
             fontsize=18,
             fontweight="bold"
         )
 
-        plt.tight_layout()
+    # Other chart types
+    else:
 
-    # =========================
-    # Bar Chart
-    # =========================
-    elif chart_type == "bar":
+        fig, ax = plt.subplots(figsize=(10, 6))
 
-        numeric.mean().plot(
-            kind="bar",
-            color="#10B981",
-            edgecolor="black"
-        )
+        # Bar Chart
+        if chart_type == "bar":
 
-        plt.title(
-            "Average Values",
-            fontsize=18,
-            fontweight="bold"
-        )
+            numeric.mean().plot(
+                kind="bar",
+                color="#10B981",
+                edgecolor="black",
+                ax=ax
+            )
 
-        plt.xlabel("Columns")
-        plt.ylabel("Average")
+            ax.set_title(
+                "Average Values",
+                fontsize=18,
+                fontweight="bold"
+            )
 
-        plt.grid(axis="y", alpha=0.3)
+            ax.set_xlabel("Columns")
+            ax.set_ylabel("Average")
+            ax.grid(axis="y", alpha=0.3)
 
-    # =========================
-    # Line Chart
-    # =========================
-    elif chart_type == "line":
+        # Line Chart
+        elif chart_type == "line":
 
-        numeric.head(20).plot(
-            linewidth=3,
-            marker="o",
-            markersize=6
-        )
+            numeric.head(20).plot(
+                linewidth=3,
+                marker="o",
+                markersize=6,
+                ax=ax
+            )
 
-        plt.title(
-            "Trend Analysis",
-            fontsize=18,
-            fontweight="bold"
-        )
+            ax.set_title(
+                "Trend Analysis",
+                fontsize=18,
+                fontweight="bold"
+            )
 
-        plt.xlabel("Records")
-        plt.ylabel("Values")
+            ax.set_xlabel("Records")
+            ax.set_ylabel("Values")
+            ax.grid(True, alpha=0.3)
 
-        plt.grid(True, alpha=0.3)
+        # Pie Chart
+        elif chart_type == "pie":
 
-    # =========================
-    # Pie Chart
-    # =========================
-    elif chart_type == "pie":
+            colors = [
+                "#2563EB",
+                "#10B981",
+                "#F59E0B",
+                "#EF4444",
+                "#8B5CF6",
+                "#06B6D4",
+                "#EC4899",
+                "#84CC16"
+            ]
 
-        colors = [
-            "#2563EB",
-            "#10B981",
-            "#F59E0B",
-            "#EF4444",
-            "#8B5CF6",
-            "#06B6D4",
-            "#EC4899",
-            "#84CC16"
-        ]
+            numeric.mean().plot(
+                kind="pie",
+                autopct="%1.1f%%",
+                colors=colors,
+                ax=ax
+            )
 
-        numeric.mean().plot(
-            kind="pie",
-            autopct="%1.1f%%",
-            colors=colors
-        )
+            ax.set_title(
+                "Distribution of Average Values",
+                fontsize=18,
+                fontweight="bold"
+            )
 
-        plt.title(
-            "Distribution of Average Values",
-            fontsize=18,
-            fontweight="bold"
-        )
+            ax.set_ylabel("")
 
-        plt.ylabel("")
+        # Scatter Plot
+        elif chart_type == "scatter":
 
-    # =========================
-    # Scatter Plot
-    # =========================
-    elif chart_type == "scatter":
+            cols = numeric.columns
 
-        cols = numeric.columns
+            if len(cols) < 2:
+                plt.close(fig)
+                return None
 
-        if len(cols) >= 2:
-
-            plt.scatter(
+            ax.scatter(
                 numeric[cols[0]],
                 numeric[cols[1]],
                 color="#2563EB",
@@ -135,59 +147,150 @@ def generate_chart(chart_type):
                 edgecolors="black"
             )
 
-            plt.title(
+            ax.set_title(
                 "Scatter Plot Analysis",
                 fontsize=18,
                 fontweight="bold"
             )
 
-            plt.xlabel(cols[0])
-            plt.ylabel(cols[1])
-
-            plt.grid(True, alpha=0.3)
+            ax.set_xlabel(cols[0])
+            ax.set_ylabel(cols[1])
+            ax.grid(True, alpha=0.3)
 
         else:
-            return "Need at least two numeric columns."
+            plt.close(fig)
+            return None
 
-    else:
-        return "Invalid chart type."
+    fig.tight_layout()
 
-    plt.tight_layout()
+    # Save image into memory instead of static/chart.png
+    image_buffer = BytesIO()
 
-    plt.savefig(
-        "static/chart.png",
-        dpi=300,
+    fig.savefig(
+        image_buffer,
+        format="png",
+        dpi=200,
         bbox_inches="tight"
     )
 
-    plt.close()
+    plt.close(fig)
 
-    return render_template("charts.html")
+    image_buffer.seek(0)
+
+    return image_buffer
 
 
-# =========================
-# Download Chart
-# =========================
+# =========================================================
+# Charts Dashboard
+# =========================================================
 
-@charts_bp.route('/download_chart')
-def download_chart():
+@charts_bp.route("/charts")
+def charts():
+
+    return render_template(
+        "charts.html",
+        chart_type=None
+    )
+
+
+# =========================================================
+# Generate Chart
+# =========================================================
+
+@charts_bp.route("/generate_chart/<chart_type>")
+def generate_chart(chart_type):
+
+    allowed_types = [
+        "hist",
+        "bar",
+        "line",
+        "pie",
+        "scatter"
+    ]
+
+    if chart_type not in allowed_types:
+        abort(404)
+
+    if shared.current_df is None:
+        return "Please upload a dataset first.", 400
+
+    image_buffer = create_chart_image(chart_type)
+
+    if image_buffer is None:
+        return "Unable to generate this chart. Check the numeric columns.", 400
+
+    image_buffer.close()
+
+    session["chart_type"] = chart_type
+
+    return render_template(
+        "charts.html",
+        chart_type=chart_type
+    )
+
+
+# =========================================================
+# Display Chart Image
+# =========================================================
+
+@charts_bp.route("/chart_image/<chart_type>")
+def chart_image(chart_type):
+
+    image_buffer = create_chart_image(chart_type)
+
+    if image_buffer is None:
+        abort(404)
 
     return send_file(
-        "static/chart.png",
+        image_buffer,
+        mimetype="image/png"
+    )
+
+
+# =========================================================
+# Download Chart
+# =========================================================
+
+@charts_bp.route("/download_chart")
+def download_chart():
+
+    chart_type = session.get("chart_type")
+
+    if not chart_type:
+        return "Please generate a chart first.", 400
+
+    image_buffer = create_chart_image(chart_type)
+
+    if image_buffer is None:
+        return "Unable to generate chart.", 400
+
+    return send_file(
+        image_buffer,
+        mimetype="image/png",
         as_attachment=True,
         download_name="InsightMiner_Chart.png"
     )
 
 
-# =========================
+# =========================================================
 # Download Heatmap
-# =========================
+# =========================================================
 
-@charts_bp.route('/download_heatmap')
+@charts_bp.route("/download_heatmap")
 def download_heatmap():
 
+    heatmap_path = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "static",
+        "heatmap.png"
+    )
+
+    if not os.path.isfile(heatmap_path):
+        return "Heatmap image is not available.", 404
+
     return send_file(
-        "static/heatmap.png",
+        heatmap_path,
+        mimetype="image/png",
         as_attachment=True,
         download_name="InsightMiner_Heatmap.png"
     )

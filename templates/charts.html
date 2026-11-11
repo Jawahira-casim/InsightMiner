@@ -59,11 +59,18 @@
 
             <div class="text-center">
 
-                <img
-                    src="{{ url_for('static', filename='chart.png') }}"
-                    class="img-fluid rounded shadow border"
-                    style="max-height:600px;"
-                >
+                {% if chart_type %}
+    <img
+        src="{{ url_for('charts.chart_image', chart_type=chart_type) }}"
+        class="img-fluid rounded shadow border"
+        style="max-height:600px;"
+        alt="Generated InsightMiner Chart"
+    >
+{% else %}
+    <p class="text-muted">
+        Select a chart type above to generate a visualization.
+    </p>
+{% endif %}
 
             </div>
 
