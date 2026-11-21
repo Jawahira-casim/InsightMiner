@@ -657,7 +657,7 @@ def delete_backup(filename):
 # AUTOMATIC BACKUP RESTORE - ISOLATED TEST DATABASE
 # ---------------------------------------------------------
 
-RESTORE_TEST_DATABASE = "insightminer_restore_test4"
+RESTORE_TEST_DATABASE = "insightminer_restore_test5"
 
 def get_restore_test_connection():
     """Connect only to the dedicated restore-test database."""
@@ -830,12 +830,14 @@ def get_restore_staging_folder():
     return os.path.join(
         project_root,
         "instance",
-        "restore_test4_files"
+        "restore_test5_files"
     )
+
 def restore_uploaded_files(backup_zip):
-    """Copy uploaded files into an isolated staging folder."""
+    """Copy uploaded files into an isolated staging folder safely."""
 
     restore_folder = get_restore_staging_folder()
+    restore_root = os.path.abspath(restore_folder)
 
     if os.path.exists(restore_folder):
         raise ValueError(
@@ -843,36 +845,79 @@ def restore_uploaded_files(backup_zip):
             "Inspect or rename it before running another restore."
         )
 
-    os.makedirs(restore_folder, exist_ok=True)
+    os.makedirs(restore_folder, exist_ok=False)
 
     copied_files = 0
 
-    allowed_folders = (
-        "uploaded_datasets/",
-        "uploads/",
-        "reports/"
-    )
+    allowed_folders = {
+        "uploaded_datasets",
+        "uploads",
+        "reports"
+    }
 
-    for info in backup_zip.infolist():
+    try:
+        for info in backup_zip.infolist():
 
-        if not info.filename.startswith(allowed_folders):
-            continue
+            name = info.filename
 
-        if info.is_dir():
-            continue
+            if not name.startswith(
+                ("uploaded_datasets/", "uploads/", "reports/")
+            ):
+                continue
 
-        destination = os.path.join(
-            restore_folder,
-            *PurePosixPath(info.filename).parts
-        )
+            if info.is_dir():
+                continue
 
-        os.makedirs(os.path.dirname(destination), exist_ok=True)
+            path = PurePosixPath(name)
 
-        with backup_zip.open(info) as source:
-            with open(destination, "wb") as target:
-                shutil.copyfileobj(source, target)
+            if (
+                not name
+                or "\\" in name
+                or path.is_absolute()
+                or ".." in path.parts
+                or ":" in name
+                or not path.parts
+                or path.parts[0] not in allowed_folders
+            ):
+                raise ValueError(
+                    "Unsafe file path found during extraction."
+                )
 
-        copied_files += 1
+            destination = os.path.abspath(
+                os.path.join(restore_root, *path.parts)
+            )
+
+            try:
+                common_path = os.path.commonpath(
+                    [restore_root, destination]
+                )
+            except ValueError:
+                raise ValueError(
+                    "Unsafe destination path found during extraction."
+                )
+
+            if os.path.normcase(common_path) != os.path.normcase(
+                restore_root
+            ):
+                raise ValueError(
+                    "File extraction attempted outside the restore folder."
+                )
+
+            os.makedirs(
+                os.path.dirname(destination),
+                exist_ok=True
+            )
+
+            with backup_zip.open(info) as source:
+                with open(destination, "wb") as target:
+                    shutil.copyfileobj(source, target)
+
+            copied_files += 1
+
+    except Exception:
+        # Remove only the staging folder created by this attempt.
+        shutil.rmtree(restore_folder, ignore_errors=True)
+        raise
 
     return copied_files
 
